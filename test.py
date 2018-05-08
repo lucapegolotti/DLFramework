@@ -20,4 +20,6 @@ output_backward = linear.backward(output)
 
 print(output_backward)
 relu = mm.ReLU()
-print(relu.forward(output_backward))
+output = relu.forward(output_backward)
+
+relu.backard(output)
