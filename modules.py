@@ -34,9 +34,9 @@ class Linear(Module):
 
     def backward(self,*gradwrtoutput):
         dl_ds = gradwrtoutput[0]
-        self.weights_grad = self.weights_grad + dl_ds.mm(input[0])
+        self.weights_grad = self.weights_grad + dl_ds.transpose(0,1).mm(self.inputs[0])
 
-        return self.weights.transpose(0,1).mm(dl_ds)
+        return dl_ds.mm(self.weights)
 
     def param(self):
         return [(self.weights, self.weights_grad), (self.bias, self.bias_grad)]
