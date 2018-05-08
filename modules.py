@@ -13,7 +13,10 @@ class Module(object):
     def backward(self,*gradwrtoutput):
         raise NotImplementedError
 
-    def param(self) :
+    def resetGradient(self):
+        raise NotImplementedError
+
+    def param(self):
         return []
 
 class Linear(Module):
@@ -40,6 +43,10 @@ class Linear(Module):
         self.bias_grad = self.bias_grad + FloatTensor(np.sum(dl_ds.numpy(),axis=0))
         return dl_ds.mm(self.weights)
 
+    def resetGradient(self):
+        self.weights_grad.zero_()
+        self.bias_grad.zero_()
+
     def param(self):
         return [(self.weights, self.weights_grad), (self.bias, self.bias_grad)]
 
@@ -53,5 +60,50 @@ class ReLU(Module):
         dl_ds = dsigma * self.input[0]
         return dl_ds
 
+    def resetGradient(self):
+        return
+
     def param(self):
         return []
+
+class Sequential(Module):
+    def __init__(self,criterion):
+        self.modules_list = []
+        self.modules_registered = False
+        self.criterion = criterion
+
+    def registerModules(self,*modules):
+        self.modules_registered = True
+        for m in modules:
+            self.modules_list.append(m)
+
+    def checkIfModulesAreRegistered(self):
+        if (self.modules_registered is False):
+            raise RuntimeError('No modules were registered in the Sequential net!')
+
+    # call resetGradient on all the modules
+    def resetGradient(self):
+        checkIfModulesAreRegistered()
+
+        for m in self.modules_list:
+            m.restetGradient()
+
+    def forward(self, *input):
+        checkIfModulesAreRegistered()
+
+        x = input
+        for m in self.modules_list:
+            x = m.forward(x)
+
+    def backward(self,*gradwrtoutput):
+        checkIfModulesAreRegistered()
+
+        grad = gradwrtoutput[0]
+
+        for m in reversed(self.modules_list):
+            grad = m.backard(grad)
+
+        return grad
+
+    def backward(self, output, expected):
+        return backward(criterion.grad(output,expected))
