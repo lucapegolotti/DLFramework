@@ -19,3 +19,5 @@ output = linear.forward(x)
 output_backward = linear.backward(output)
 
 print(output_backward)
+relu = mm.ReLU()
+print(relu.forward(output_backward))

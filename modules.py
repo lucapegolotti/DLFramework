@@ -35,8 +35,18 @@ class Linear(Module):
     def backward(self,*gradwrtoutput):
         dl_ds = gradwrtoutput[0]
         self.weights_grad = self.weights_grad + dl_ds.transpose(0,1).mm(self.inputs[0])
-
+        
+        # I am not sure about this step
+        self.bias_grad = self.bias_grad + FloatTensor(np.sum(dl_ds.numpy(),axis=0))
         return dl_ds.mm(self.weights)
 
     def param(self):
         return [(self.weights, self.weights_grad), (self.bias, self.bias_grad)]
+
+class ReLU(Module):
+    def forward(self,*input):
+        self.input = input
+        return FloatTensor(np.maximum(input[0].numpy(),np.zeros(input[0].size())))
+
+    def param(self):
+        return []
