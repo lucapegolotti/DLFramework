@@ -1,7 +1,6 @@
 #################### TODO: delete dependencies of pytorch
 import torch
 from torch import nn
-import modules as mm
 
 import numpy as np
 ####################
@@ -9,17 +8,35 @@ import numpy as np
 from torch import FloatTensor as FloatTensor
 from torch import LongTensor as LongTensor
 
-dim1 = 100
-dim2 = 3
-dim3 = 4
-x = FloatTensor(np.random.normal(0,1,size=(dim1,dim2)))
-linear = mm.Linear(dim2,dim3)
+import modules as mm
+import criterions as C
 
-output = linear.forward(x)
-output_backward = linear.backward(output)
+nsamples = 100
+nchannels = 5
+nfeatures = 50
 
-print(output_backward)
-relu = mm.ReLU()
-output = relu.forward(output_backward)
+outputs = 2
 
-relu.backard(output)
+class SimpleNet(mm.Sequential):
+    def __init__(self,criterion):
+        super(SimpleNet, self).__init__(criterion)
+        self.fc1 = mm.Linear(nchannels * nfeatures, outputs)
+        self.nonlinear = nn.ReLU()
+
+        super().registerModules(self.fc1, self.nonlinear)
+
+    def forward(self, *input):
+        x = input[0].view(nsamples, nchannels * nfeatures)
+        x = self.nonlinear.forward(self.fc1.forward(x))
+        return x
+
+loss = C.LossMSE()
+net = SimpleNet(loss)
+
+x = FloatTensor(np.random.normal(0,1,size=(nsamples,nchannels,nfeatures)))
+expected = FloatTensor(np.random.normal(0,1,size=(nsamples,outputs)))
+
+output = net.forward(x)
+loss_value = loss.function(output,expected)
+
+print(loss_value)

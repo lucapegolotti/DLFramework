@@ -88,13 +88,6 @@ class Sequential(Module):
         for m in self.modules_list:
             m.restetGradient()
 
-    def forward(self, *input):
-        checkIfModulesAreRegistered()
-
-        x = input
-        for m in self.modules_list:
-            x = m.forward(x)
-
     def backward(self,*gradwrtoutput):
         checkIfModulesAreRegistered()
 
