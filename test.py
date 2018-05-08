@@ -16,3 +16,5 @@ x = FloatTensor(np.random.normal(0,1,size=(dim1,dim2)))
 linear = mm.Linear(dim2,dim3)
 
 print(linear.forward(x).size())
+
+print(linear.param())
