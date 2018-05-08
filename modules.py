@@ -17,14 +17,15 @@ class Module(object):
         return []
 
 class Linear(Module):
-    def __init__(self, rows, cols):
+    def __init__(self, in_features, out_features):
         super().__init__()
-        self.rows = rows
-        self.cols = cols
         # TODO: fix the initialization of the matrix
-        self.weights = FloatTensor(np.random.uniform(0,1,size=(rows,cols)))
-        self.bias = FloatTensor(np.random.uniform(0,1,size=(rows,1)))
+        self.weights = FloatTensor(np.random.normal(0,1,size=(out_features,in_features)))
+        self.bias = FloatTensor(np.random.normal(0,1,size=(1,out_features)))
 
     def forward(self,*input):
         print(input)
-        return self.weights.mv(input[0]) + self.bias
+        return input[0].mm(self.weights.transpose(0,1)) + self.bias
+
+    def param(self):
+        return [self.weights, self.bias]
