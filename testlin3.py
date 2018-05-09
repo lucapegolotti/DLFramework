@@ -90,5 +90,5 @@ def train_model(net,n_epochs,eta):
 loss = C.LossMSE()
 net = SimpleNet(loss)
 
-n_epochs, eta = 500, 1e-2
+n_epochs, eta = 500, 1e-1
 train_model(net,n_epochs,eta)
