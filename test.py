@@ -36,7 +36,11 @@ net = SimpleNet(loss)
 x = FloatTensor(np.random.normal(0,1,size=(nsamples,nchannels,nfeatures)))
 expected = FloatTensor(np.random.normal(0,1,size=(nsamples,outputs)))
 
-output = net.forward(x)
-loss_value = net.backwardPass(output,expected)
-
-print(loss_value)
+n_epochs = 100
+eta = 0.1
+for i in range(n_epochs):
+    output = net.forward(x)
+    loss_value = net.backwardPass(output,expected)
+    net.updateGradient(eta)
+    loss_string = "Loss : {0:.2f}%".format(loss_value)
+    print(loss_string)

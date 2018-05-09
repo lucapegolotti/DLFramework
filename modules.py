@@ -16,6 +16,10 @@ class Module(object):
     def resetGradient(self):
         raise NotImplementedError
 
+    def updateGradient(self):
+        raise NotImplementedError
+
+    # for the moment, this is useless
     def param(self):
         return []
 
@@ -47,6 +51,10 @@ class Linear(Module):
         self.weights_grad.zero_()
         self.bias_grad.zero_()
 
+    def updateGradient(self,eta):
+        self.weights = self.weights - eta * self.weights_grad
+        self.bias = self.bias - eta * self.bias_grad
+
     def param(self):
         return [(self.weights, self.weights_grad), (self.bias, self.bias_grad)]
 
@@ -64,6 +72,9 @@ class ReLU(Module):
         return dl_ds
 
     def resetGradient(self):
+        return
+
+    def updateGradient(self,eta):
         return
 
     def param(self):
@@ -89,7 +100,13 @@ class Sequential(Module):
         self.checkIfModulesAreRegistered()
 
         for m in self.modules_list:
-            m.restetGradient()
+            m.resetGradient()
+
+    def updateGradient(self,eta):
+        self.checkIfModulesAreRegistered()
+
+        for m in reversed(self.modules_list):
+            m.updateGradient(eta)
 
     def backward(self,*gradwrtoutput):
         self.checkIfModulesAreRegistered()
@@ -102,4 +119,6 @@ class Sequential(Module):
         return grad
 
     def backwardPass(self, output, expected):
-        return self.backward(self.criterion.grad(output,expected))
+        value_loss = self.criterion.grad(output,expected)
+        self.backward(value_loss)
+        return self.criterion.function(output,expected)
