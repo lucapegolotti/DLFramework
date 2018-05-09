@@ -80,6 +80,29 @@ class ReLU(Module):
     def param(self):
         return []
 
+class Tanh(Module):
+    def __init__(self):
+        super(Tanh,self).__init__()
+
+    def forward(self,*input):
+        self.input = input
+        return np.tanh(input[0])
+
+    def backward(self,*gradwrtoutput):
+        th = np.tanh(input[0])
+        dsigma = 1 - th*th
+        dl_ds = dsigma * self.input[0]
+        return dl_ds
+
+    def resetGradient(self):
+        return
+
+    def updateGradient(self,eta):
+        return
+
+    def param(self):
+        return []
+
 class Sequential(Module):
     def __init__(self,criterion):
         self.modules_list = []
