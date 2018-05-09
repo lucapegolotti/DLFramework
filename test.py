@@ -14,7 +14,7 @@ import criterions as C
 import build_test as test
 
 
-npoints = 10000
+npoints = 1000
 train_input, train_target, test_input, test_target = test.generate(npoints)
 
 nsamples = npoints
@@ -54,21 +54,25 @@ def compute_number_errors(inputs,outputs):
 
     return count
 
+def train_model(model,n_epochs,eta):
+
+    for i in range(n_epochs):
+        net.resetGradient()
+        output = net.forward(train_input)
+        loss_value = net.backwardPass(output,train_target)
+        net.updateGradient(eta)
+
+        print("Epoch = " + str(i))
+        loss_string = "Loss : {0:.2f}".format(loss_value)
+        print(loss_string)
+        count = compute_number_errors(train_input,train_target)
+        train_string = "Train error : {0:.2f}%".format((nsamples-count)/nsamples*100)
+        print(train_string)
+
+
 
 loss = C.LossMSE()
 net = SimpleNet(loss)
 
-n_epochs = 1000
-eta = 0.001
-for i in range(n_epochs):
-    net.resetGradient()
-    output = net.forward(train_input)
-    loss_value = net.backwardPass(output,train_target)
-    net.updateGradient(eta)
-
-    print("Epoch = " + str(i))
-    loss_string = "Loss : {0:.2f}".format(loss_value)
-    print(loss_string)
-    count = compute_number_errors(train_input,train_target)
-    train_string = "Train error : {0:.2f}%".format((nsamples-count)/nsamples*100)
-    print(train_string)
+n_epochs, eta = 500, 1e-1
+train_model(net,n_epochs,eta)
