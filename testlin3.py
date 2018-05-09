@@ -31,7 +31,9 @@ class SimpleNet(mm.Sequential):
         self.fc3 = mm.Linear(25, outputs)
         self.nonlinear = mm.ReLU()
 
-        super().registerModules(self.fc1,self.fc2,self.nonlinear)
+
+        #super().registerModules(self.fc1,self.nonlinear,self.fc2,self.nonlinear,self.fc3,self.nonlinear)
+        super().registerModules(self.fc1, self.nonlinear, self.fc2,self.fc3)
 
     def forward(self, *input):
         x = input[0].view(nsamples, nchannels * nfeatures)
