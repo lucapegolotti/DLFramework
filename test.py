@@ -11,7 +11,7 @@ from torch import LongTensor as LongTensor
 import modules as mm
 import criterions as C
 
-import build_simple_test as test
+import build_linear_test as test
 
 
 npoints = 1000
