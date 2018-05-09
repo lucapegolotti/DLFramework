@@ -21,7 +21,7 @@ class Module(object):
 
 class Linear(Module):
     def __init__(self, in_features, out_features):
-        super().__init__()
+        super(Linear,self).__init__()
         # TODO: fix the initialization of the matrix
         self.weights = FloatTensor(np.random.normal(0,1,size=(out_features,in_features)))
         self.bias = FloatTensor(np.random.normal(0,1,size=(1,out_features)))
@@ -51,11 +51,14 @@ class Linear(Module):
         return [(self.weights, self.weights_grad), (self.bias, self.bias_grad)]
 
 class ReLU(Module):
+    def __init__(self):
+        super(ReLU,self).__init__()
+
     def forward(self,*input):
         self.input = input
         return FloatTensor(np.maximum(input[0].numpy(),np.zeros(input[0].size())))
 
-    def backard(self,*gradwrtoutput):
+    def backward(self,*gradwrtoutput):
         dsigma = FloatTensor(np.heaviside(self.input[0].numpy(),1.0))
         dl_ds = dsigma * self.input[0]
         return dl_ds
@@ -79,24 +82,24 @@ class Sequential(Module):
 
     def checkIfModulesAreRegistered(self):
         if (self.modules_registered is False):
-            raise RuntimeError('No modules were registered in the Sequential net!')
+            raise RuntimeError('No modules were registered in the Sequential net! Call registerModules in the constructor')
 
     # call resetGradient on all the modules
     def resetGradient(self):
-        checkIfModulesAreRegistered()
+        self.checkIfModulesAreRegistered()
 
         for m in self.modules_list:
             m.restetGradient()
 
     def backward(self,*gradwrtoutput):
-        checkIfModulesAreRegistered()
+        self.checkIfModulesAreRegistered()
 
         grad = gradwrtoutput[0]
 
         for m in reversed(self.modules_list):
-            grad = m.backard(grad)
+            grad = m.backward(grad)
 
         return grad
 
-    def backward(self, output, expected):
-        return backward(criterion.grad(output,expected))
+    def backwardPass(self, output, expected):
+        return self.backward(self.criterion.grad(output,expected))

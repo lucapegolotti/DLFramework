@@ -21,7 +21,7 @@ class SimpleNet(mm.Sequential):
     def __init__(self,criterion):
         super(SimpleNet, self).__init__(criterion)
         self.fc1 = mm.Linear(nchannels * nfeatures, outputs)
-        self.nonlinear = nn.ReLU()
+        self.nonlinear = mm.ReLU()
 
         super().registerModules(self.fc1, self.nonlinear)
 
@@ -37,6 +37,6 @@ x = FloatTensor(np.random.normal(0,1,size=(nsamples,nchannels,nfeatures)))
 expected = FloatTensor(np.random.normal(0,1,size=(nsamples,outputs)))
 
 output = net.forward(x)
-loss_value = loss.function(output,expected)
+loss_value = net.backwardPass(output,expected)
 
 print(loss_value)
