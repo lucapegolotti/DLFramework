@@ -67,7 +67,7 @@ class ReLU(Module):
 
     def backward(self,*gradwrtoutput):
         dsigma = FloatTensor(np.heaviside(self.input[0].numpy(),1.0))
-        dl_ds = dsigma * self.input[0]
+        dl_ds = dsigma * gradwrtoutput[0]
         return dl_ds
 
     def resetGradient(self):
@@ -88,9 +88,9 @@ class Tanh(Module):
         return np.tanh(input[0])
 
     def backward(self,*gradwrtoutput):
-        th = np.tanh(input[0])
+        th = np.tanh(self.input[0])
         dsigma = 1 - th*th
-        dl_ds = dsigma * self.input[0]
+        dl_ds = dsigma * gradwrtoutput[0]
         return dl_ds
 
     def resetGradient(self):

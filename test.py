@@ -27,15 +27,15 @@ class SimpleNet(mm.Sequential):
         super(SimpleNet, self).__init__(criterion)
         self.fc1 = mm.Linear(nchannels * nfeatures, 10)
         self.fc2 = mm.Linear(10, outputs)
-        # self.nonlinear = mm.ReLU()
+        self.nonlinear = mm.ReLU()
 
-        super().registerModules(self.fc1,self.fc2)
+        super().registerModules(self.fc1,self.fc2,self.nonlinear)
 
     def forward(self, *input):
         x = input[0].view(nsamples, nchannels * nfeatures)
         x = self.fc1.forward(x)
         x = self.fc2.forward(x)
-        # x = self.nonlinear.forward(x)
+        x = self.nonlinear.forward(x)
         return x
 
 def compute_number_errors(inputs,outputs):
