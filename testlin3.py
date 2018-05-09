@@ -29,20 +29,22 @@ class SimpleNet(mm.Sequential):
         self.fc1 = mm.Linear(nchannels * nfeatures, 25)
         self.fc2 = mm.Linear(25, 25)
         self.fc3 = mm.Linear(25, outputs)
-        self.nonlinear = mm.ReLU()
+        self.nonlinear1 = mm.ReLU()
+        self.nonlinear2 = mm.ReLU()
+        self.nonlinear3 = mm.ReLU()
 
 
         #super().registerModules(self.fc1,self.nonlinear,self.fc2,self.nonlinear,self.fc3,self.nonlinear)
-        super().registerModules(self.fc1, self.nonlinear, self.fc2,self.fc3)
+        super().registerModules(self.fc1, self.nonlinear1, self.fc2,self.nonlinear2,self.fc3,self.nonlinear3)
 
     def forward(self, *input):
         x = input[0].view(nsamples, nchannels * nfeatures)
         x = self.fc1.forward(x)
-        x = self.nonlinear.forward(x)
+        x = self.nonlinear1.forward(x)
         x = self.fc2.forward(x)
-        x = self.nonlinear.forward(x)
+        x = self.nonlinear2.forward(x)
         x = self.fc3.forward(x)
-        x = self.nonlinear.forward(x)
+        x = self.nonlinear3.forward(x)
 
         return x
 
