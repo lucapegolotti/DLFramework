@@ -14,7 +14,7 @@ import criterions as C
 import build_test as test
 
 
-npoints = 1000
+npoints = 10000
 train_input, train_target, test_input, test_target = test.generate(npoints)
 
 nsamples = npoints
@@ -26,7 +26,7 @@ class SimpleNet(mm.Sequential):
     def __init__(self,criterion):
         super(SimpleNet, self).__init__(criterion)
         self.fc1 = mm.Linear(nchannels * nfeatures, outputs)
-        self.nonlinear = mm.Tanh()
+        self.nonlinear = mm.ReLU()
 
         super().registerModules(self.fc1)
 
@@ -50,7 +50,7 @@ def compute_number_errors(inputs,outputs):
         else:
             indexmax_output = 1
         if (indexmax_input == indexmax_output):
-            count = count+1
+            count = count + 1
 
     return count
 

@@ -12,11 +12,9 @@ def sample(npoints):
     radius_sq = 1/(2 * math.pi)
     for i in range(npoints):
         if (input[i,0] * input[i,0] + input[i,1] * input[i,1] < radius_sq):
-            target[i,0] = 0.9
-            target[i,1] = -0.9
+            target[i,0] = 1
         else:
-            target[i,1] = 0.9
-            target[i,0] = -0.9
+            target[i,1] = 0
     return input, target
 
 def generate(npoints):
