@@ -11,7 +11,7 @@ from torch import LongTensor as LongTensor
 import modules as mm
 import criterions as C
 
-import build_test as test
+import build_simple_test as test
 
 
 npoints = 1000
@@ -25,20 +25,23 @@ outputs = 2
 class SimpleNet(mm.Sequential):
     def __init__(self,criterion):
         super(SimpleNet, self).__init__(criterion)
-        self.fc1 = mm.Linear(nchannels * nfeatures, outputs)
-        self.nonlinear = mm.ReLU()
+        self.fc1 = mm.Linear(nchannels * nfeatures, 10)
+        self.fc2 = mm.Linear(10, outputs)
+        # self.nonlinear = mm.ReLU()
 
-        super().registerModules(self.fc1)
+        super().registerModules(self.fc1,self.fc2)
 
     def forward(self, *input):
         x = input[0].view(nsamples, nchannels * nfeatures)
         x = self.fc1.forward(x)
-        x = self.nonlinear.forward(x)
+        x = self.fc2.forward(x)
+        # x = self.nonlinear.forward(x)
         return x
 
 def compute_number_errors(inputs,outputs):
     nsamples = inputs.size(0)
     count = 0
+
     for i in range(nsamples):
         if (inputs[i,0] > inputs[i,1]):
             indexmax_input = 0
@@ -55,24 +58,27 @@ def compute_number_errors(inputs,outputs):
     return count
 
 def train_model(model,n_epochs,eta):
-
+    count = compute_number_errors(train_input,train_target)
+    train_string = "Initial train error : {0:.2f}%".format((nsamples-count)/nsamples*100)
     for i in range(n_epochs):
         net.resetGradient()
         output = net.forward(train_input)
         loss_value = net.backwardPass(output,train_target)
-        net.updateGradient(eta)
+        net.updateParameters(eta,nsamples)
 
         print("Epoch = " + str(i))
-        loss_string = "Loss : {0:.2f}".format(loss_value)
+        loss_string = "\tLoss : {0:.2f}".format(loss_value)
         print(loss_string)
-        count = compute_number_errors(train_input,train_target)
-        train_string = "Train error : {0:.2f}%".format((nsamples-count)/nsamples*100)
+        count = compute_number_errors(net.forward(train_input),train_target)
+        train_string = "\tTrain error : {0:.2f}%".format((nsamples-count)/nsamples*100)
         print(train_string)
-
+        count = compute_number_errors(net.forward(test_input),test_target)
+        train_string = "\tTest error : {0:.2f}%".format((nsamples-count)/nsamples*100)
+        print(train_string)
 
 
 loss = C.LossMSE()
 net = SimpleNet(loss)
 
-n_epochs, eta = 500, 1e-1
+n_epochs, eta = 500, 1e-2
 train_model(net,n_epochs,eta)

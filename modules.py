@@ -16,7 +16,7 @@ class Module(object):
     def resetGradient(self):
         raise NotImplementedError
 
-    def updateGradient(self):
+    def updateParameters(self):
         raise NotImplementedError
 
     # for the moment, this is useless
@@ -42,7 +42,6 @@ class Linear(Module):
     def backward(self,*gradwrtoutput):
         dl_ds = gradwrtoutput[0]
         self.weights_grad = self.weights_grad + dl_ds.transpose(0,1).mm(self.inputs[0])
-
         # I am not sure about this step
         self.bias_grad = self.bias_grad + FloatTensor(np.sum(dl_ds.numpy(),axis=0))
         return dl_ds.mm(self.weights)
@@ -51,7 +50,7 @@ class Linear(Module):
         self.weights_grad.zero_()
         self.bias_grad.zero_()
 
-    def updateGradient(self,eta):
+    def updateParameters(self,eta):
         self.weights = self.weights - eta * self.weights_grad
         self.bias = self.bias - eta * self.bias_grad
 
@@ -74,7 +73,7 @@ class ReLU(Module):
     def resetGradient(self):
         return
 
-    def updateGradient(self,eta):
+    def updateParameters(self,eta):
         return
 
     def param(self):
@@ -125,17 +124,17 @@ class Sequential(Module):
         for m in self.modules_list:
             m.resetGradient()
 
-    def updateGradient(self,eta):
+    def updateParameters(self,eta,nsamples):
         self.checkIfModulesAreRegistered()
-
+        # scale eta by number of samples (see ex 3)
+        eta = eta / nsamples
         for m in reversed(self.modules_list):
-            m.updateGradient(eta)
+            m.updateParameters(eta)
 
     def backward(self,*gradwrtoutput):
         self.checkIfModulesAreRegistered()
 
         grad = gradwrtoutput[0]
-
         for m in reversed(self.modules_list):
             grad = m.backward(grad)
 
