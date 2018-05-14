@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(__file__))
+
 import torch
 
 from torch import FloatTensor as FloatTensor
@@ -101,46 +105,3 @@ class Tanh(Module):
 
     def param(self):
         return []
-
-class Sequential(Module):
-    def __init__(self,criterion):
-        self.modules_list = []
-        self.modules_registered = False
-        self.criterion = criterion
-
-    def registerModules(self,*modules):
-        self.modules_registered = True
-        for m in modules:
-            self.modules_list.append(m)
-
-    def checkIfModulesAreRegistered(self):
-        if (self.modules_registered is False):
-            raise RuntimeError('No modules were registered in the Sequential net! Call registerModules in the constructor')
-
-    # call resetGradient on all the modules
-    def resetGradient(self):
-        self.checkIfModulesAreRegistered()
-
-        for m in self.modules_list:
-            m.resetGradient()
-
-    def updateParameters(self,eta,nsamples):
-        self.checkIfModulesAreRegistered()
-        # scale eta by number of samples (see ex 3)
-        eta = eta / nsamples
-        for m in reversed(self.modules_list):
-            m.updateParameters(eta)
-
-    def backward(self,*gradwrtoutput):
-        self.checkIfModulesAreRegistered()
-
-        grad = gradwrtoutput[0]
-        for m in reversed(self.modules_list):
-            grad = m.backward(grad)
-
-        return grad
-
-    def backwardPass(self, output, expected):
-        value_loss = self.criterion.grad(output,expected)
-        self.backward(value_loss)
-        return self.criterion.function(output,expected)

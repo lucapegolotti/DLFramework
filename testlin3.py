@@ -8,12 +8,11 @@ import numpy as np
 from torch import FloatTensor as FloatTensor
 from torch import LongTensor as LongTensor
 
-import modules as mm
-import criterions as C
+import framework.modules as M
+import framework.criterions as C
+import framework.networks as N
 
 import build_linear_test as test
-
-
 
 npoints = 1000
 train_input, train_target, test_input, test_target = test.generate(npoints)
@@ -28,18 +27,16 @@ nfeatures = 2
 nchannels = 1
 outputs = 2
 
-class SimpleNet(mm.Sequential):
+class SimpleNet(N.Sequential):
     def __init__(self,criterion):
         super(SimpleNet, self).__init__(criterion)
-        self.fc1 = mm.Linear(nchannels * nfeatures, 25)
-        self.fc2 = mm.Linear(25, 25)
-        self.fc3 = mm.Linear(25, outputs)
-        self.nonlinear1 = mm.ReLU()
-        self.nonlinear2 = mm.ReLU()
-        self.nonlinear3 = mm.ReLU()
+        self.fc1 = M.Linear(nchannels * nfeatures, 25)
+        self.fc2 = M.Linear(25, 25)
+        self.fc3 = M.Linear(25, outputs)
+        self.nonlinear1 = M.ReLU()
+        self.nonlinear2 = M.ReLU()
+        self.nonlinear3 = M.ReLU()
 
-
-        #super().registerModules(self.fc1,self.nonlinear,self.fc2,self.nonlinear,self.fc3,self.nonlinear)
         super().registerModules(self.fc1, self.nonlinear1, self.fc2,self.nonlinear2,self.fc3)
 
     def forward(self, *input):
@@ -49,7 +46,6 @@ class SimpleNet(mm.Sequential):
         x = self.fc2.forward(x)
         x = self.nonlinear2.forward(x)
         x = self.fc3.forward(x)
-
 
         return x
 
@@ -77,9 +73,9 @@ def train_model(net,n_epochs,eta):
     train_string = "Initial train error : {0:.2f}%".format((nsamples-count)/nsamples*100)
     for i in range(n_epochs):
         sum_loss = 0
-        net.resetGradient()
+        net.resetGradients()
         output = net.forward(train_input)
-        loss_value = net.backwardPass(output,train_target)
+        loss_value = net.backward(output,train_target)
         sum_loss = sum_loss + loss_value
         net.updateParameters(eta,nsamples)
         if (i%100 == 0):

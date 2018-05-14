@@ -66,8 +66,12 @@
 
 \section{Objective}
 
-The objective of this project is to design a mini “deep learning framework” using only pytorch’s tensor operations and the standard math library, hence in particular without using autograd or the neural-network modules.
-We used the suggested class
+The objective of this project is to design a mini “deep learning framework” using only tensor operations in pytorch and the standard math library, in particular without using autograd or the neural-network modules. 
+
+\section{Code structure}
+The framework is composed by two modules: \verb|modules| and \verb|criterions|.
+\subsection{Modules}
+Modules implement some of the typical building blocks of a neural network. Each of these building blocks derives from the class
 \begin{verbatim}
 class Module(object):
     def forward(self,*input):
@@ -85,8 +89,9 @@ class Module(object):
     def param(self):
         return []
 \end{verbatim}
-in which we added the methods resetGradient and updateParameters.
+the basic structure of which (except for the methods \verb|resetGradient| and \verb|updateParameters|) was suggested in the description of the project.
 
+\section{Test case}
 The structure of the test code, implementing a network with two input units, two output units, three hidden layers of 25 units is:
 \begin{itemize}
 \item Generate 1000 training sample, and 1000 testing points\\
@@ -95,8 +100,6 @@ The structure of the test code, implementing a network with two input units, two
 \item Train the neural network using the 1000 training sample, for 1000 epochs and a constant learning rate $=1e-2$.
 \item Plot the training error and the testing error while training the network, and verify these results with the framework PyTorch.
 \end{itemize}
-
-
 
 The parameters of the sample length is hidden in the $mean$ function, and we had to modify the eta in the final code: $eta=eta/nsample$.
 \begin{verbatim}
