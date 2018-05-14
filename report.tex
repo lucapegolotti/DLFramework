@@ -1,0 +1,139 @@
+\documentclass[10pt,final,a4paper]{article}
+\usepackage[left=3cm,right=3cm,top=2cm,bottom=2cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{subcaption}
+\usepackage{amsthm}
+\usepackage{mdframed}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[square,sort,comma,numbers]{natbib}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[]{algorithm2e}
+\usepackage{bm}
+\usepackage{soul}
+\soulregister\cite{7}
+\makeatletter
+\renewcommand{\@algocf@capt@plain}{above}% formerly {bottom}
+\makeatother
+\newtheorem{theorem}{Theorem}
+\newtheorem*{proof*}{Proof}
+\newtheorem{lemma}{Lemma}
+\usepackage{hyperref}
+\newtheorem{assumption}{Assumption}
+\newtheorem*{assumptionbis}{Assumption 2-bis}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+\newtheorem{corollary}{Corollary}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\V}{\mathbb{V}ar}
+\newcommand{\x}{\widehat{x}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\newcommand{\uu}{u^*}
+\newcommand{\uuh}{u^{h*}}
+\newcommand{\uhu}{\widehat{u}^*}
+
+
+% editing
+\newcommand{\FabioAdd}[1]{{\color{magenta} #1}}
+\newcommand{\MMAdd}[1]{{\color{teal} #1}}
+\newcommand{\FabioCorr}[2]{{\color{red}\st{#1}} {\color{red} #2}}
+\newcommand{\FabioMP}[1]{{\color{red} *} \marginpar{\footnotesize \color{red}*Fabio: #1}}
+\newcommand{\MattMP}[1]{{\color{blue} *} \marginpar{\footnotesize \color{blue}*Matthieu: #1}}
+\newcommand{\SebQ}[1]{{\color{blue}\textbf{Seb:} #1}} %question in text
+\newcommand{\SebMP}[1]{\textcolor{blue}{*} \marginpar{ {\begin{flushleft} \scriptsize \textcolor{blue}{* #1} \end{flushleft} } }} % note as a margin par
+\newcommand{\SebNew}[1]{{\color{blue} #1}}
+
+% math commands
+\def\KL{{Karhunen-L\`{o}eve }}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\dive}{div}
+\DeclareMathOperator*{\essinf}{essinf}
+
+\begin{document}
+%\maketitle
+% define title information
+\title{EE-559: Mini-project II}
+\author{Pegolotti Luca - Martin Matthieu}
+
+\date{\today}
+\maketitle
+
+
+\section{Objective}
+
+The objective of this project is to design a mini “deep learning framework” using only pytorch’s tensor operations and the standard math library, hence in particular without using autograd or the neural-network modules.
+We used the suggested class
+\begin{verbatim}
+class Module(object):
+    def forward(self,*input):
+        raise NotImplementedError
+
+    def backward(self,*gradwrtoutput):
+        raise NotImplementedError
+
+    def resetGradient(self):
+        raise NotImplementedError
+
+    def updateParameters(self):
+        raise NotImplementedError
+
+    def param(self):
+        return []
+\end{verbatim}
+in which we added the methods resetGradient and updateParameters.
+
+The structure of the test code, implementing a network with two input units, two output units, three hidden layers of 25 units is:
+\begin{itemize}
+\item Generate 1000 training sample, and 1000 testing points\\
+\item Normalize them with a zero mean and unit std\\
+\item Built a three hidden layer with linear neural network, and ReLU after each linear module "SimpleNet"\\
+\item Train the neural network using the 1000 training sample, for 1000 epochs and a constant learning rate $=1e-2$.
+\item Plot the training error and the testing error while training the network, and verify these results with the framework PyTorch.
+\end{itemize}
+
+
+
+The parameters of the sample length is hidden in the $mean$ function, and we had to modify the eta in the final code: $eta=eta/nsample$.
+\begin{verbatim}
+class LossMSE(object):
+    def function(self,output,expected):
+        return torch.mean(torch.pow(expected - output,2))
+
+    def grad(self,output,expected):
+        return -2 * (expected - output)
+\end{verbatim}
+
+The sequential class work as follow:
+\begin{verbatim}
+class Sequential(Module):
+    def __init__(self,criterion):
+
+
+    def registerModules(self,*modules):
+
+
+    def checkIfModulesAreRegistered(self):
+
+
+    def resetGradient(self):
+
+
+    def updateParameters(self,eta,nsamples):
+
+
+    def backward(self,*gradwrtoutput):
+
+
+    def backwardPass(self, output, expected):
+
+\end{verbatim}
+where the $registerModules$ needs to be called when we define a new network, in order to store the modules in a list. We will use the list ordered when we will call the methods $forward$, $backward$, and $update_Parameters$
+\bibliography{bib}
+\bibliographystyle{amsplain} 
+\end{document}
+\grid
