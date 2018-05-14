@@ -35,7 +35,7 @@ mini_batch_size = 1000
 
 def train_model(model, train_input, train_target):
 	criterion = nn.MSELoss()
-	eta = 1e-1
+	eta = 1e-2
 	#optimizer = optim.SGD(model.parameters(), lr=1e-3)
 	nb_epochs = 2000
 
@@ -46,7 +46,7 @@ def train_model(model, train_input, train_target):
 			loss = criterion(output, train_target.narrow(0, b, mini_batch_size))
 			model.zero_grad()
 			loss.backward()
-			sum_loss = sum_loss + loss.data.item()
+			#sum_loss = sum_loss + loss.data.item()
 			for p in model.parameters():
 				p.data.sub_(eta * p.grad.data)
 		if (e % 100 == 0):
