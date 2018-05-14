@@ -18,6 +18,11 @@ import build_linear_test as test
 npoints = 1000
 train_input, train_target, test_input, test_target = test.generate(npoints)
 
+mean, std = train_input.mean(), train_input.std()
+
+train_input.sub_(mean).div_(std)
+test_input.sub_(mean).div_(std)
+
 nsamples = npoints
 nfeatures = 2
 nchannels = 1
@@ -71,20 +76,28 @@ def train_model(net,n_epochs,eta):
     count = compute_number_errors(train_input,train_target)
     train_string = "Initial train error : {0:.2f}%".format((nsamples-count)/nsamples*100)
     for i in range(n_epochs):
+        sum_loss = 0
         net.resetGradient()
         output = net.forward(train_input)
         loss_value = net.backwardPass(output,train_target)
+        sum_loss = sum_loss + loss_value
         net.updateParameters(eta,nsamples)
         if (i%100 == 0):
-            print("Epoch = " + str(i))
-            loss_string = "\tLoss : {0:.2f}".format(loss_value)
-            print(loss_string)
-            count = compute_number_errors(net.forward(train_input),train_target)
-            train_string = "\tTrain error : {0:.2f}%".format((nsamples-count)/nsamples*100)
-            print(train_string)
-            count = compute_number_errors(net.forward(test_input),test_target)
-            train_string = "\tTest error : {0:.2f}%".format((nsamples-count)/nsamples*100)
-            print(train_string)
+            counttr = compute_number_errors(net.forward(train_input), train_target)
+            countte = compute_number_errors(net.forward(test_input), test_target)
+            print('epoch {:d} loss  {:f} sum_loss  {:f}  train_error {:.02f}% test_error {:.02f}%'.format(i,loss_value,sum_loss,
+                    (nsamples - counttr) / nsamples * 100,(nsamples - countte) / nsamples * 100,
+                  )
+                  )
+            # print("Epoch = " + str(i))
+            # loss_string = "\tLoss : {0:.2f}".format(loss_value)
+            # print(loss_string)
+            #
+            # train_string = "\tTrain error : {0:.2f}%".format((nsamples-count)/nsamples*100)
+            # print(train_string)
+            # count = compute_number_errors(net.forward(test_input),test_target)
+            # train_string = "\tTest error : {0:.2f}%".format((nsamples-count)/nsamples*100)
+            # print(train_string)
 
 
 loss = C.LossMSE()
@@ -92,3 +105,8 @@ net = SimpleNet(loss)
 
 n_epochs, eta = 2000, 1e-3
 train_model(net,n_epochs,eta)
+print('train_error {:.02f}% test_error {:.02f}%'.format(
+    (nsamples-compute_number_errors(net.forward(train_input), train_target)) / train_input.size(0) * 100,
+    (nsamples-compute_number_errors(net.forward(test_input), test_target)) / test_input.size(0) * 100
+)
+)
