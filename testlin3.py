@@ -103,7 +103,7 @@ def train_model(net,n_epochs,eta):
 loss = C.LossMSE()
 net = SimpleNet(loss)
 
-n_epochs, eta = 5000, 1e-3
+n_epochs, eta = 1000, 1e-3
 train_model(net,n_epochs,eta)
 print('train_error {:.02f}% test_error {:.02f}%'.format(
     (nsamples-compute_number_errors(net.forward(train_input), train_target)) / train_input.size(0) * 100,

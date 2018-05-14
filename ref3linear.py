@@ -37,7 +37,7 @@ def train_model(model, train_input, train_target):
 	criterion = nn.MSELoss()
 	eta = 1e-3
 	#optimizer = optim.SGD(model.parameters(), lr=1e-3)
-	nb_epochs = 5000
+	nb_epochs = 1000
 
 	for e in range(0, nb_epochs):
 		sum_loss = 0
@@ -94,7 +94,7 @@ def mymodel():
 	)
 m=mymodel
 model=m()
-#for p in model.parameters(): p.data.normal_(0, 1)
+for p in model.parameters(): p.data.normal_(0, 1)
 train_model(model, train_input, train_target)
 print('std {:s} train_error {:.02f}% test_error {:.02f}%'.format(
 	m.__name__,
