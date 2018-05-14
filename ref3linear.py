@@ -10,17 +10,15 @@ from torch import Tensor
 from torch.autograd import Variable
 from torch import nn
 
-
+import build_linear_test as test
 ######################################################################
 
-def generate_disc_set(nb):
-	input = Tensor(nb, 2).uniform_(-1, 1)
-	target = input.pow(2).sum(1).sub(2 / math.pi).sign().add(1).div(2).long()
-	return input, target
 
-
-train_input, train_target = generate_disc_set(1000)
-test_input, test_target = generate_disc_set(1000)
+#train_input, train_target = generate_disc_set(1000)
+#test_input, test_target = generate_disc_set(1000)
+npoints = 1000
+train_input, train_target, test_input, test_target = test.generate(npoints)
+#print(train_target.size())
 
 mean, std = train_input.mean(), train_input.std()
 
@@ -36,20 +34,25 @@ mini_batch_size = 1000
 ######################################################################
 
 def train_model(model, train_input, train_target):
-	criterion = nn.CrossEntropyLoss()
-	optimizer = optim.SGD(model.parameters(), lr=1e-3)
+	criterion = nn.MSELoss()
+	eta = 1e-1
+	#optimizer = optim.SGD(model.parameters(), lr=1e-3)
 	nb_epochs = 2000
 
 	for e in range(0, nb_epochs):
+		sum_loss = 0
 		for b in range(0, train_input.size(0), mini_batch_size):
 			output = model(train_input.narrow(0, b, mini_batch_size))
 			loss = criterion(output, train_target.narrow(0, b, mini_batch_size))
 			model.zero_grad()
 			loss.backward()
-			optimizer.step()
+			sum_loss = sum_loss + loss.data.item()
+			for p in model.parameters():
+				p.data.sub_(eta * p.grad.data)
 		if (e % 100 == 0):
-			print('epoch {:d} std {:s} {:f} train_error {:.02f}% test_error {:.02f}%'.format(e, m.__name__,
-					std,
+			print('epoch {:d} loss  {:f} sum_loss  {:f}  train_error {:.02f}% test_error {:.02f}%'.format(e,
+					loss,
+					sum_loss,
 					compute_nb_errors(model,
 								   train_input,
 								   train_target) / train_input.size(
@@ -71,7 +74,7 @@ def compute_nb_errors(model, data_input, data_target):
 		output = model(data_input.narrow(0, b, mini_batch_size))
 		_, predicted_classes = torch.max(output.data, 1)
 		for k in range(0, mini_batch_size):
-			if data_target.data[b + k] != predicted_classes[k]:
+			if data_target.data[b + k,predicted_classes[k]] <0.1:
 				nb_data_errors = nb_data_errors + 1
 
 	return nb_data_errors
