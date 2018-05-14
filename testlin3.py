@@ -35,7 +35,7 @@ class SimpleNet(mm.Sequential):
 
 
         #super().registerModules(self.fc1,self.nonlinear,self.fc2,self.nonlinear,self.fc3,self.nonlinear)
-        super().registerModules(self.fc1, self.nonlinear1, self.fc2,self.nonlinear2,self.fc3,self.nonlinear3)
+        super().registerModules(self.fc1, self.nonlinear1, self.fc2,self.nonlinear2,self.fc3)
 
     def forward(self, *input):
         x = input[0].view(nsamples, nchannels * nfeatures)
@@ -44,7 +44,7 @@ class SimpleNet(mm.Sequential):
         x = self.fc2.forward(x)
         x = self.nonlinear2.forward(x)
         x = self.fc3.forward(x)
-        x = self.nonlinear3.forward(x)
+
 
         return x
 
@@ -75,20 +75,20 @@ def train_model(net,n_epochs,eta):
         output = net.forward(train_input)
         loss_value = net.backwardPass(output,train_target)
         net.updateParameters(eta,nsamples)
-
-        #print("Epoch = " + str(i))
-        loss_string = "\tLoss : {0:.2f}".format(loss_value)
-        print(loss_string)
-        count = compute_number_errors(net.forward(train_input),train_target)
-        train_string = "\tTrain error : {0:.2f}%".format((nsamples-count)/nsamples*100)
-        print(train_string)
-        count = compute_number_errors(net.forward(test_input),test_target)
-        train_string = "\tTest error : {0:.2f}%".format((nsamples-count)/nsamples*100)
-        print(train_string)
+        if (i%100 == 0):
+            print("Epoch = " + str(i))
+            loss_string = "\tLoss : {0:.2f}".format(loss_value)
+            print(loss_string)
+            count = compute_number_errors(net.forward(train_input),train_target)
+            train_string = "\tTrain error : {0:.2f}%".format((nsamples-count)/nsamples*100)
+            print(train_string)
+            count = compute_number_errors(net.forward(test_input),test_target)
+            train_string = "\tTest error : {0:.2f}%".format((nsamples-count)/nsamples*100)
+            print(train_string)
 
 
 loss = C.LossMSE()
 net = SimpleNet(loss)
 
-n_epochs, eta = 500, 1e-1
+n_epochs, eta = 2000, 1e-3
 train_model(net,n_epochs,eta)
