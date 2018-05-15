@@ -28,11 +28,11 @@ class Network(object):
         for m in self:
             m.resetGradient()
 
-    def updateParameters(self,eta,nsamples):
+    def updateWeights(self,eta,nsamples):
         # scale eta by the number of samples
         eta = eta / nsamples
         for m in self:
-            m.updateParameters(eta)
+            m.updateWeights(eta)
 
 class Sequential(Network):
     def __init__(self,criterion):

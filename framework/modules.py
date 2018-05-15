@@ -20,7 +20,7 @@ class Module(object):
     def resetGradient(self):
         raise NotImplementedError
 
-    def updateParameters(self):
+    def updateWeights(self,eta):
         raise NotImplementedError
 
     # for the moment, this is useless
@@ -54,7 +54,7 @@ class Linear(Module):
         self.weights_grad.zero_()
         self.bias_grad.zero_()
 
-    def updateParameters(self,eta):
+    def updateWeights(self,eta):
         self.weights = self.weights - eta * self.weights_grad
         self.bias = self.bias - eta * self.bias_grad
 
@@ -77,7 +77,7 @@ class ReLU(Module):
     def resetGradient(self):
         return
 
-    def updateParameters(self,eta):
+    def updateWeights(self,eta):
         return
 
     def param(self):
@@ -100,7 +100,7 @@ class Tanh(Module):
     def resetGradient(self):
         return
 
-    def updateGradient(self,eta):
+    def updateWeights(self,eta):
         return
 
     def param(self):

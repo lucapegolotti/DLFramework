@@ -69,28 +69,39 @@
 The objective of this project is to design a mini “deep learning framework” using only tensor operations in pytorch and the standard math library, in particular without using autograd or the neural-network modules. 
 
 \section{Code structure}
-The framework is composed by two modules: \verb|modules| and \verb|criterions|.
+\begin{figure}
+\centering
+\includegraphics[scale=0.42, clip=true, trim=45 270 90 10]{diagram.pdf}
+\caption{Class diagram of the framework. We indicate with the notation ``$=0$'' the methods that need to be implemented by the derived classes, even though such methods are not actually abstract in a strict sense.}
+\label{fig:diagram}
+\end{figure}
+The framework is composed by two modules: \verb|modules|, \verb|criterions| and \verb|networks|. The classes implemented in each module interact as shown in Figure~\ref{fig:diagram}.
 \subsection{Modules}
-Modules implement some of the typical building blocks of a neural network. Each of these building blocks derives from the class
-\begin{verbatim}
-class Module(object):
-    def forward(self,*input):
-        raise NotImplementedError
+Modules implement some of the typical building blocks of a neural network. Each of these building blocks derives from the class \verb|Module| (see Figure~\ref{fig:diagram}), the basic structure of which (except for the methods \verb|resetGradient| and \verb|updateParameters|) was suggested in the description of the project. The methods \verb|forward| and \verb|backward| implement a forward and backward pass respectively. The method \verb|resetGradient| resets all the gradient tensors (if any) to zero, whereas the method \verb|updateWeights| updates the weights (if any) of the module according to the learning rate \verb|eta|.
 
-    def backward(self,*gradwrtoutput):
-        raise NotImplementedError
+All the modules deriving from \verb|Module| posses a variable \verb|input| taking the value of the input which was provided during the latest call to the \verb|forward| method: this is necessary to compute  the \verb|backward| call.
+The classes which derive from \verb|Module| are:
+\begin{itemize}
+\item \verb|Linear|: given an input tensor $x \in \mathbb{R}^{n_\text{s} \times n_\text{in}}$, the output $y \in \mathbb{R}^{n_\text{s} \times n_\text{out}}$ of this module is given by $y_{ij} = \sum_{k} x_{ik} A_{kj} + b_{j}$, where $A \in \mathbb{R}^{n_\text{out} \times n_\text{in}}$ is the weight matrix, $b \in \mathbb{R}^{n_\text{out}}$ is the bias, and $n_\text{in}$, $n_\text{out}$ and $n_\text{s}$ are the number of input/output features and samples respectively. This module has the attributes \verb|weight| and \verb|bias|, which store the values of $A$ and $b$ respectively, and \verb|weight_grad| and \verb|bias_grad| which store the respective gradients.
+\item \verb|ReLU|:  this module applies the ReLU function to any given input tensor, namely, given $x \in \mathbb{R}^{n \times m}$, the output tensor $y \in \mathbb{R}^{n \times m}$ is defined by $y_{ij} = \text{ReLU}(x_{ij}) = \text{max}\{0, x_{ij}\}$.
+\item \verb|Tanh|: this module applies the tanh function to each component of the input tensor $x \in \mathbb{R}^{n \times m}$, i.e. the output tensor  $y \in \mathbb{R}^{n \times m}$ is defined by $y_{ij} = \text{tanh}(x_{ij})$.
+\end{itemize}
+\subsection{Criterions}
+The \verb|criterions| module contains the implementation of the loss functions. These share the interface given by the following base class \verb|Loss| (see Figure~\ref{fig:diagram}). The method \verb|function| computes the loss function of the \verb|output| of a forward pass of a network with respect to the \verb|expected|, and the \verb|grad| method computes the gradient of the loss corresponding to the same parameters.
 
-    def resetGradient(self):
-        raise NotImplementedError
+The available criterions are:
+\begin{itemize}
+\item \verb|LossMSE|: Mean Square Error loss function. If $x \in \mathbb{R}^{N \times m}$ is the output of the forward pass and $y \in \mathbb{R}^{N \times m}$ is the expected output, the loss function is computed as $\text{MSE}(x,y) = \sum_{i,j} (x_{ij} - y_{ij})^2$ \textbf{we need to check this, in the solution of ex 3 they don't do the mean}.
+\item \verb|LossCrossEntropy|: to be implemented?
+\end{itemize}
 
-    def updateParameters(self):
-        raise NotImplementedError
+\subsection{Networks}
+The \verb|criterions| module provides generic structures for the implementation of neural networks. The base class is the \verb|Network| class (see Figure~\ref{fig:diagram}). Each derived class must be iterable (namely, it must provide the abstract method \verb|__iter__|) and must implement the \verb|forward| and the \verb|backward| methods, which depend on the topology of the underlying graph.
 
-    def param(self):
-        return []
-\end{verbatim}
-the basic structure of which (except for the methods \verb|resetGradient| and \verb|updateParameters|) was suggested in the description of the project.
-
+The available networks are:
+\begin{itemize}
+\item \verb|Sequential|: template for neural networks: it provides a blueprint for derived classes implementing fully connected neural networks. Each graph must include a unique ``source'' (a node with only one input), a unique ``sink'' (a node with only one input) and nodes with exactly one input and one output. Each node is in fact an object derived from the \verb|Module| class and must be defined as an attribute of a derived class in the constructor. Importantly, at the end of the constructor these objects must be registered via the method \verb|registerModules(self,*modules)|, where the \verb|*modules| must contain the modules in the order they appear in the network itself. Internally, the \verb|registerModules| method builds a list of the modules, which  provides a way to iterate over the elements composing the \verb|Sequential| network. The forward and backward passes are executed in a straightforward manner by calling the \verb|forward| and \verb|backward| method of all the modules of the graph sequentially and propagating the result to the next or the previous node.
+\end{itemize}
 \section{Test case}
 The structure of the test code, implementing a network with two input units, two output units, three hidden layers of 25 units is:
 \begin{itemize}
