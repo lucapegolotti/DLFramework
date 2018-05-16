@@ -103,14 +103,15 @@ class Tanh(ActivationFunction):
 
 class Sigmoid(ActivationFunction):
     def __init__(self):
-        super(Tanh,self).__init__()
+        super(Sigmoid,self).__init__()
 
     def forward(self,*input):
         self.input = input
-        return np.tanh(input[0])
+        expval = np.exp(input[0])
+        return np.divide(expval,1 + expval)
 
     def backward(self,*gradwrtoutput):
-        th = np.tanh(self.input[0])
-        dsigma = 1 - th*th
-        dl_ds = dsigma * gradwrtoutput[0]
+        sigma = self.forward(self.input[0])
+        dsigma = np.multiply(sigma,(1 - sigma))
+        dl_ds = dsigma * gradwrtoutput[0] *10
         return dl_ds
