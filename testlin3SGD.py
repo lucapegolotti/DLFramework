@@ -21,6 +21,7 @@ mean, std = train_input.mean(), train_input.std()
 
 train_input.sub_(mean).div_(std)
 test_input.sub_(mean).div_(std)
+print(train_input.type())
 
 nsamples = npoints
 nfeatures = 2
@@ -39,7 +40,7 @@ class SimpleNet(N.Sequential):
         super().registerModules(self.fc1, self.nonlinear1, self.fc2,self.nonlinear2,self.fc3)
 
     def forward(self, *input):
-        x = input[0].view(nsamples, nchannels * nfeatures)
+        x = input[0].view(-1, nchannels * nfeatures)
         x = self.fc1.forward(x)
         x = self.nonlinear1.forward(x)
         x = self.fc2.forward(x)
@@ -66,37 +67,43 @@ def compute_number_errors(inputs,outputs):
             count = count + 1
     return count
 
-def train_model(net,n_epochs,eta):
-    count = compute_number_errors(train_input,train_target)
-    train_string = "Initial train error : {0:.2f}%".format((nsamples-count)/nsamples*100)
+def train_model(net,n_epochs,eta,mini_batch_size,train_input, train_target):
+    #count = compute_number_errors(train_input,train_target)
+    #train_string = "Initial train error : {0:.2f}%".format((nsamples-count)/nsamples*100)
     for i in range(n_epochs):
-        net.resetGradients()
-        output = net.forward(train_input)
-        loss_value = net.backward(output,train_target)
-        net.updateWeights(eta,nsamples)
+        perm = torch.randperm(npoints)
+        #print(train_input)
+        train_input = train_input[perm]
+        #print(train_input)
+        train_target = train_target[perm]
+        for b in range(0, npoints, mini_batch_size):
+            net.resetGradients()
+            output = net.forward(train_input.narrow(0, b, mini_batch_size))
+            loss_value = net.backward(output,train_target.narrow(0, b, mini_batch_size))
+            net.updateWeights(eta,nsamples)
         if (i%100 == 0):
             counttr = compute_number_errors(net.forward(train_input), train_target)
             countte = compute_number_errors(net.forward(test_input), test_target)
-            print('epoch {:d} loss  {:f} train_error {:.02f}% test_error {:.02f}%'.format(i,loss_value,
+            print('epoch {:d} loss  {:f}  train_error {:.02f}% test_error {:.02f}%'.format(i,loss_value,
                     (nsamples - counttr) / nsamples * 100,(nsamples - countte) / nsamples * 100,
                   )
                   )
-            # print("Epoch = " + str(i))
-            # loss_string = "\tLoss : {0:.2f}".format(loss_value)
-            # print(loss_string)
-            #
-            # train_string = "\tTrain error : {0:.2f}%".format((nsamples-count)/nsamples*100)
-            # print(train_string)
-            # count = compute_number_errors(net.forward(test_input),test_target)
-            # train_string = "\tTest error : {0:.2f}%".format((nsamples-count)/nsamples*100)
-            # print(train_string)
+                # print("Epoch = " + str(i))
+                # loss_string = "\tLoss : {0:.2f}".format(loss_value)
+                # print(loss_string)
+                #
+                # train_string = "\tTrain error : {0:.2f}%".format((nsamples-count)/nsamples*100)
+                # print(train_string)
+                # count = compute_number_errors(net.forward(test_input),test_target)
+                # train_string = "\tTest error : {0:.2f}%".format((nsamples-count)/nsamples*100)
+                # print(train_string)
 
 
 loss = C.LossMSE()
 net = SimpleNet(loss)
 
-n_epochs, eta = 1000, 1e-3
-train_model(net,n_epochs,eta)
+n_epochs, eta, mini_batch_size = 5000, 1e-3, 10
+train_model(net,n_epochs,eta,mini_batch_size,train_input, train_target)
 print('train_error {:.02f}% test_error {:.02f}%'.format(
     (nsamples-compute_number_errors(net.forward(train_input), train_target)) / train_input.size(0) * 100,
     (nsamples-compute_number_errors(net.forward(test_input), test_target)) / test_input.size(0) * 100
