@@ -61,7 +61,20 @@ class Linear(Module):
     def param(self):
         return [(self.weights, self.weights_grad), (self.bias, self.bias_grad)]
 
-class ReLU(Module):
+class ActivationFunction(Module):
+    def __init__(self):
+        super(ActivationFunction,self).__init__()
+
+    def resetGradient(self):
+        return
+
+    def updateWeights(self,eta):
+        return
+
+    def param(self):
+        return []
+
+class ReLU(ActivationFunction):
     def __init__(self):
         super(ReLU,self).__init__()
 
@@ -74,16 +87,7 @@ class ReLU(Module):
         dl_ds = dsigma * gradwrtoutput[0]
         return dl_ds
 
-    def resetGradient(self):
-        return
-
-    def updateWeights(self,eta):
-        return
-
-    def param(self):
-        return []
-
-class Tanh(Module):
+class Tanh(ActivationFunction):
     def __init__(self):
         super(Tanh,self).__init__()
 
@@ -97,11 +101,16 @@ class Tanh(Module):
         dl_ds = dsigma * gradwrtoutput[0]
         return dl_ds
 
-    def resetGradient(self):
-        return
+class Sigmoid(ActivationFunction):
+    def __init__(self):
+        super(Tanh,self).__init__()
 
-    def updateWeights(self,eta):
-        return
+    def forward(self,*input):
+        self.input = input
+        return np.tanh(input[0])
 
-    def param(self):
-        return []
+    def backward(self,*gradwrtoutput):
+        th = np.tanh(self.input[0])
+        dsigma = 1 - th*th
+        dl_ds = dsigma * gradwrtoutput[0]
+        return dl_ds
