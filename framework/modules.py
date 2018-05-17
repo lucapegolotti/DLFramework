@@ -113,5 +113,5 @@ class Sigmoid(ActivationFunction):
     def backward(self,*gradwrtoutput):
         sigma = self.forward(self.input[0])
         dsigma = np.multiply(sigma,(1 - sigma))
-        dl_ds = dsigma * gradwrtoutput[0] *10
+        dl_ds = dsigma * gradwrtoutput[0]
         return dl_ds
