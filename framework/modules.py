@@ -84,7 +84,16 @@ class Linear(Module):
     def forward(self,*input):
         # save previous input for backward pass
         self.inputs = input
-        # TODO: check validity of input vector
+
+        # check input size
+        if len(input) > 1:
+            raise ValueError("Linear module expects just one input tensor!")
+
+        # check input tensor size
+        if input[0].size(1) is not self.weights.size(1):
+            raise ValueError("Inconsistent input and weights dimensions in \
+                              Linear forward method")
+
         return input[0].mm(self.weights.transpose(0,1)) + self.bias
 
     """
@@ -96,10 +105,21 @@ class Linear(Module):
           Must be composed by a single element
     """
     def backward(self,*gradwrtoutput):
+
+        # check gradwrtoutput size
+        if len(gradwrtoutput) > 1:
+            raise ValueError("Linear module expects just one gradient tensor in \
+                              backward call!")
+
         dl_ds = gradwrtoutput[0]
+
+        if dl_ds.size(0) is not self.inputs[0].size(0):
+            raise ValueError("Inconsistent gradient dimension in Linear backward \
+                              call!")
+
         self.weights_grad = self.weights_grad + dl_ds.transpose(0,1).mm(self.inputs[0])
-        # I am not sure about this step
         self.bias_grad = self.bias_grad + FloatTensor(np.sum(dl_ds.numpy(),axis=0))
+
         return dl_ds.mm(self.weights)
 
     """
@@ -177,6 +197,11 @@ class ReLU(ActivationFunction):
     """
     def forward(self,*input):
         self.input = input
+
+        # check input size
+        if len(input) > 1:
+            raise ValueError("ReLU module expects just one input tensor!")
+
         return FloatTensor(np.maximum(input[0].numpy(),np.zeros(input[0].size())))
 
     """
@@ -191,6 +216,11 @@ class ReLU(ActivationFunction):
           a backward pass
     """
     def backward(self,*gradwrtoutput):
+        # check gradient size
+        if len(gradwrtoutput) > 1:
+            raise ValueError("ReLU module expects just one gradient tensor in \
+                              backward call!")
+
         dsigma = FloatTensor(np.heaviside(self.input[0].numpy(),1.0))
         dl_ds = dsigma * gradwrtoutput[0]
         return dl_ds
@@ -216,6 +246,11 @@ class Tanh(ActivationFunction):
           applying the tanh function to each component of the input
     """
     def forward(self,*input):
+
+        # check input size
+        if len(input) > 1:
+            raise ValueError("Tanh module expects just one input tensor!")
+
         self.input = input
         return np.tanh(input[0])
 
@@ -231,6 +266,11 @@ class Tanh(ActivationFunction):
           a backward pass
     """
     def backward(self,*gradwrtoutput):
+
+        if len(gradwrtoutput) > 1:
+            raise ValueError("Tanh module expects just one gradient tensor in \
+                              backward call!")
+
         th = np.tanh(self.input[0])
         dsigma = 1 - th*th
         dl_ds = dsigma * gradwrtoutput[0]
@@ -257,6 +297,11 @@ class Sigmoid(ActivationFunction):
           applying the sigmoid function to each component of the input
     """
     def forward(self,*input):
+
+        # check input size
+        if len(input) > 1:
+            raise ValueError("Sigmoid module expects just one input tensor!")
+
         self.input = input
         expval = np.exp(input[0])
         return np.divide(expval,1 + expval)
@@ -273,6 +318,11 @@ class Sigmoid(ActivationFunction):
           a backward pass
     """
     def backward(self,*gradwrtoutput):
+
+        if len(gradwrtoutput) > 1:
+            raise ValueError("Sigmoid module expects just one gradient tensor in \
+                              backward call!")
+
         sigma = self.forward(self.input[0])
         dsigma = np.multiply(sigma,(1 - sigma))
         dl_ds = dsigma * gradwrtoutput[0]
