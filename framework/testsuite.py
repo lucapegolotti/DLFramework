@@ -430,7 +430,207 @@ class TestSigmoid(Test):
 
         return 0
 
-tests = [TestModule(), TestLinear(), TestReLU(), TestTanh(), TestSigmoid()]
+class TestLoss(Test):
+    def test_function(self):
+        loss = C.Loss()
+        try:
+            loss.function()
+        except:
+            return 0
+        return 1
 
+    def test_grad(self):
+        loss = C.Loss()
+        try:
+            loss.gradient()
+        except:
+            return 0
+        return 1
+
+class TestLossMSE(Test):
+    def test_function(self):
+        loss = C.LossMSE()
+
+        x = FloatTensor([[1,2,3],[-4,2,3]])
+        y = FloatTensor([[3,2,0],[-1,2,3]])
+
+        res = loss.function(x,y)
+
+        expected_res = 22/6
+
+        if abs(res-expected_res) > 1e-10:
+            return 1
+
+        return 0
+
+    def test_grad(self):
+        loss = C.LossMSE()
+
+        x = FloatTensor([[1,2,3],[-4,2,3]])
+        y = FloatTensor([[3,2,0],[-1,2,3]])
+
+        output = loss.grad(x,y)
+
+        expected_output = FloatTensor([[-4,0,6],[-6,0,0]])
+        if not areEqual(output,expected_output):
+            return 1
+
+        return 0
+
+class TestNetwork(Test):
+    def test_forward(self):
+        loss = C.LossMSE()
+        m = N.Network(loss)
+
+        try:
+            m.forward()
+        except:
+            return 0
+
+        return 1
+
+    def test_backward(self):
+        loss = C.LossMSE()
+        m = N.Network(loss)
+
+        try:
+            m.backward()
+        except:
+            return 0
+
+        return 1
+
+    def test_iter(self):
+        loss = C.LossMSE()
+        m = N.Network(loss)
+
+        try:
+            m.__iter__()
+        except:
+            return 0
+
+        return 1
+
+    def test_backwardCall(self):
+        loss = C.LossMSE()
+        m = N.Network(loss)
+
+        try:
+            m.backwardCall()
+        except:
+            return 0
+
+        return 1
+
+    def test_backward(self):
+        x = FloatTensor([[1,2,3],[-4,2,3]])
+        y = FloatTensor([[3,2,0],[-1,2,3]])
+
+        loss = C.LossMSE()
+        m = N.Network(loss)
+
+        try:
+            m.backward(x,y)
+        except:
+            return 0
+
+        return 1
+
+    def test_resetGradients(self):
+        loss = C.LossMSE()
+        m = N.Network(loss)
+
+        try:
+            m.resetGradients(x,y)
+        except:
+            return 0
+
+        return 1
+
+    def test_updateWeights(self):
+        loss = C.LossMSE()
+        m = N.Network(loss)
+
+        try:
+            m.updateWeights(0.01)
+        except:
+            return 0
+
+        return 1
+
+class SequentialChild(N.Sequential):
+    def __init__(self,criterion):
+        super(SequentialChild,self).__init__(criterion)
+        self.mod1 = M.Linear(3,2)
+        self.mod2 = M.Linear(2,3)
+
+        self.registerModules(self.mod1, self.mod2)
+
+    def forward(self,*inputs):
+        x = inputs[0]
+        x = self.mod1.forward(x)
+        x = self.mod2.forward(x)
+        return x
+
+class TestSequential(Test):
+    def test_forwardNotImplemented(self):
+        loss = C.LossMSE()
+        m = N.Sequential(loss)
+
+        try:
+            m.forward()
+        except:
+            return 0
+
+        return 1
+    def test_forward(self):
+        loss = C.LossMSE()
+        m = SequentialChild(loss)
+
+        x = FloatTensor([[1,2,3],[4,3,2]])
+
+        output = m.forward(x)
+
+        if output.size() == (2,3):
+            return 0
+
+        return 1
+
+    def test_backward(self):
+        loss = C.LossMSE()
+
+        m = SequentialChild(loss)
+
+        x = FloatTensor([[2,1,3],[4,3,2]])
+        y = FloatTensor([[1,2,3],[4,-2,2]])
+
+        output = m.forward(x)
+        x = output
+        output = m.backward(x,y)
+
+        l_value = loss.function(x,y)
+
+        if abs(l_value - output) < 1e-10:
+            return 0
+
+        return 1
+
+
+tests = [TestModule(), TestLinear(), TestReLU(), TestTanh(), TestSigmoid(), \
+         TestLoss(), TestLossMSE(), TestNetwork(), TestSequential()]
+
+runs = 0
+passed = 0
 for i in tests:
-    i.run()
+    r,p = i.run()
+    runs += r
+    passed += p
+
+if runs == passed:
+    color = bcolors.green
+else:
+    color = bcolors.fail
+
+print(color + "************************************************" + bcolors.endc)
+print(color + "****** Test finished : " + str(passed) + "/" + str(runs) + " test passed! ******" + bcolors.endc)
+print(color + "************************************************" + bcolors.endc)
