@@ -127,27 +127,20 @@ The sequential class work as follow:
 class Sequential(Module):
     def __init__(self,criterion):
 
-
     def registerModules(self,*modules):
-
 
     def checkIfModulesAreRegistered(self):
 
-
     def resetGradient(self):
-
 
     def updateParameters(self,eta,nsamples):
 
-
     def backward(self,*gradwrtoutput):
-
 
     def backwardPass(self, output, expected):
 
 \end{verbatim}
 where the $registerModules$ needs to be called when we define a new network, in order to store the modules in a list. We will use the list ordered when we will call the methods $forward$, $backward$, and $update_Parameters$
-\bibliography{bib}
-\bibliographystyle{amsplain} 
+
 \end{document}
 \grid
