@@ -35,7 +35,7 @@ class SimpleNet(N.Sequential):
         self.fc2 = M.Linear(25, 25)
         self.fc3 = M.Linear(25, outputs)
         self.nonlinear1 = M.ReLU()
-        self.nonlinear2 = M.ReLU()
+        self.nonlinear2 = M.Sigmoid()
 
         super().registerModules(self.fc1, self.nonlinear1, self.fc2,self.nonlinear2,self.fc3)
 
@@ -80,7 +80,7 @@ def train_model(net,n_epochs,eta,mini_batch_size,train_input, train_target):
             net.resetGradients()
             output = net.forward(train_input.narrow(0, b, mini_batch_size))
             loss_value = net.backward(output,train_target.narrow(0, b, mini_batch_size))
-            net.updateWeights(eta,nsamples)
+            net.updateWeights(eta,mini_batch_size)
         if (i%100 == 0):
             counttr = compute_number_errors(net.forward(train_input), train_target)
             countte = compute_number_errors(net.forward(test_input), test_target)
@@ -102,7 +102,7 @@ def train_model(net,n_epochs,eta,mini_batch_size,train_input, train_target):
 loss = C.LossMSE()
 net = SimpleNet(loss)
 
-n_epochs, eta, mini_batch_size = 5000, 1e-3, 10
+n_epochs, eta, mini_batch_size = 5000, 1e-1, 100
 train_model(net,n_epochs,eta,mini_batch_size,train_input, train_target)
 print('train_error {:.02f}% test_error {:.02f}%'.format(
     (nsamples-compute_number_errors(net.forward(train_input), train_target)) / train_input.size(0) * 100,
