@@ -220,6 +220,10 @@ class ReLU(ActivationFunction):
           a backward pass
     """
     def backward(self,*gradwrtoutput):
+
+        if not hasattr(self, 'input'):
+            raise ValueError("Backward must be called after at least one forward call")
+
         # check gradient size
         if len(gradwrtoutput) > 1:
             raise ValueError("ReLU module expects just one gradient tensor in \
@@ -270,6 +274,9 @@ class Tanh(ActivationFunction):
           a backward pass
     """
     def backward(self,*gradwrtoutput):
+
+        if not hasattr(self, 'input'):
+            raise ValueError("Backward must be called after at least one forward call")
 
         if len(gradwrtoutput) > 1:
             raise ValueError("Tanh module expects just one gradient tensor in \
@@ -322,6 +329,9 @@ class Sigmoid(ActivationFunction):
           a backward pass
     """
     def backward(self,*gradwrtoutput):
+
+        if not hasattr(self, 'input'):
+            raise ValueError("Backward must be called after at least one forward call")
 
         if len(gradwrtoutput) > 1:
             raise ValueError("Sigmoid module expects just one gradient tensor in \

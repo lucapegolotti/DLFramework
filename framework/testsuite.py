@@ -19,11 +19,15 @@ class bcolors:
     bold = '\033[1m'
     underline = '\033[4m'
 
+def areEqual(tensor1,tensor2,tol=1e-15):
+    if torch.max(torch.abs(tensor1 - tensor2)) > tol:
+        return 0
+    return 1
+
 class Test(object):
     def __init__(self):
         self.runs = 0
         self.passed = 0
-        print("hello")
 
     def run(self):
         print(bcolors.header + "Running " + self.__class__.__name__ + " tests ..." + bcolors.endc)
@@ -150,7 +154,7 @@ class TestLinear(Test):
         m.weights = A
         m.bias = b
         output = m.forward(x)
-        if torch.max(torch.abs(expected_output-output)):
+        if not areEqual(expected_output,output):
             return 1
 
         return 0
@@ -200,7 +204,7 @@ class TestLinear(Test):
 
         expected_output = grad.mm(A)
 
-        if torch.max(torch.abs(expected_output-output)):
+        if not areEqual(expected_output,output):
             return 1
 
         return 0
@@ -255,16 +259,178 @@ class TestLinear(Test):
         m.updateWeights(eta)
 
         new_value = A - eta * expected_gradient
-        if torch.max(torch.abs(m.weights - new_value)) != 0:
+        if not areEqual(m.weights,new_value):
             return 1
 
         new_value = b - eta * FloatTensor(np.sum(grad.numpy(),axis=0))
-        if torch.max(torch.abs(m.bias - new_value)) != 0:
+        if not areEqual(m.bias,new_value):
             return 1
 
         return 0
 
-tests = [TestModule(), TestLinear()]
+class TestReLU(Test):
+    def test_forwardWrongInputListDimension(self):
+        m = M.ReLU()
+
+        try:
+            m.forward(FloatTensor([[2]]),FloatTensor([[2]]))
+        except ValueError:
+            return 0
+
+        return 1
+
+    def test_forwardCorrectOutput(self):
+        input = FloatTensor([[1,-3,1],[0,-1,2]])
+        expected_output = FloatTensor([[1,0,1],[0,0,2]])
+
+        m = M.ReLU()
+        output = m.forward(input)
+
+        if not areEqual(output,expected_output):
+            return 1
+
+        return 0
+
+    def test_backwardBeforeForward(self):
+        input = FloatTensor([[1,-3,1],[0,-1,2]])
+
+        m = M.ReLU()
+
+        try:
+            output = m.backward(input)
+        except:
+            return 0
+
+        return 1
+
+    def test_backwardCorrectOutput(self):
+        input = FloatTensor([[1,-3,1],[0,-1,2]])
+        dsigma = FloatTensor([[1,0,1],[1,0,1]])
+
+        m = M.ReLU()
+        m.forward(input)
+        grad = FloatTensor([[1,2,3],[3,2,1]])
+
+        output = m.backward(grad)
+        output_expected = dsigma * grad
+
+        if not areEqual(output,output_expected):
+            return 1
+
+        return 0
+
+class TestTanh(Test):
+    def test_forwardWrongInputListDimension(self):
+        m = M.Tanh()
+
+        try:
+            m.forward(FloatTensor([[2]]),FloatTensor([[2]]))
+        except ValueError:
+            return 0
+
+        return 1
+
+    def test_forwardCorrectOutput(self):
+        input = FloatTensor([[1,-3,1],[0,-1,2]])
+        expected_output = FloatTensor([[0.761594155955765,-0.995054753686730,0.761594155955765],\
+                                       [0,-0.761594155955765,0.964027580075817]])
+
+        m = M.Tanh()
+        output = m.forward(input)
+
+        if not areEqual(output,expected_output, tol = 1e-5):
+            return 1
+
+        return 0
+
+    def test_backwardBeforeForward(self):
+        input = FloatTensor([[1,-3,1],[0,-1,2]])
+
+        m = M.Tanh()
+
+        try:
+            output = m.backward(input)
+        except:
+            return 0
+
+        return 1
+
+    def test_backwardCorrectOutput(self):
+        input = FloatTensor([[1,-3,1],[0,-1,2]])
+
+        tanh_value = FloatTensor([[0.761594155955765,-0.995054753686730,0.761594155955765],\
+                                  [0,-0.761594155955765,0.964027580075817]])
+
+        dsigma = 1 - tanh_value*tanh_value
+
+        m = M.Tanh()
+        m.forward(input)
+        grad = FloatTensor([[1,2,3],[3,2,1]])
+
+        output = m.backward(grad)
+        output_expected = dsigma * grad
+
+        if not areEqual(output,output_expected):
+            return 1
+
+        return 0
+
+class TestSigmoid(Test):
+    def test_forwardWrongInputListDimension(self):
+        m = M.Sigmoid()
+
+        try:
+            m.forward(FloatTensor([[2]]),FloatTensor([[2]]))
+        except ValueError:
+            return 0
+
+        return 1
+
+    def test_forwardCorrectOutput(self):
+        input = FloatTensor([[1,-3,1],[0,-1,2]])
+        expected_output = FloatTensor([[0.731058578630005,0.047425873177567,0.731058578630005], \
+                                        [0.500000000000000,0.268941421369995,0.880797077977882]])
+
+        m = M.Sigmoid()
+        output = m.forward(input)
+        if not areEqual(output,expected_output, tol = 1e-5):
+            return 1
+
+        return 0
+
+    def test_backwardBeforeForward(self):
+        input = FloatTensor([[1,-3,1],[0,-1,2]])
+
+        m = M.Sigmoid()
+
+        try:
+            output = m.backward(input)
+        except:
+            return 0
+
+        return 1
+
+    def test_backwardCorrectOutput(self):
+        input = FloatTensor([[1,-3,1],[0,-1,2]])
+
+        sigmoid_value = FloatTensor([[0.731058578630005,0.047425873177567,0.731058578630005], \
+                                     [0.500000000000000,0.268941421369995,0.880797077977882]])
+
+        dsigma = sigmoid_value * (1 - sigmoid_value)
+
+        m = M.Sigmoid()
+        m.forward(input)
+        grad = FloatTensor([[1,2,3],[3,2,1]])
+
+        output = m.backward(grad)
+        output_expected = dsigma * grad
+
+        if not areEqual(output,output_expected):
+            return 1
+
+        return 0
+
+tests = [TestModule(), TestLinear(), TestReLU(), TestTanh(), TestSigmoid()]
 
 for i in tests:
     i.run()
