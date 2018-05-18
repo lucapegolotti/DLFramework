@@ -127,41 +127,45 @@ The available networks are:
 \section{Test case}
 The structure of the test code, implementing a network with two input units, two output units, three hidden layers of 25 units is:
 \begin{itemize}
-\item Generate 1000 training sample, and 1000 testing points\\
-\item Normalize them with a zero mean and unit std\\
-\item Built a three hidden layer with linear neural network, and ReLU after each linear module "SimpleNet"\\
+\item Generate 1000 training sample, and 1000 testing points
+\item Normalize them with a zero mean and unit std
+\item Built a three hidden layer with linear neural network, and ReLU after each linear module "SimpleNet"
 \item Train the neural network using the 1000 training sample, for 1000 epochs and a constant learning rate $=1e-2$.
 \item Plot the training error and the testing error while training the network, and verify these results with the framework PyTorch.
 \end{itemize}
 
 The parameters of the sample length is hidden in the $mean$ function, and we had to modify the eta in the final code: $eta=eta/nsample$.
-\begin{verbatim}
-class LossMSE(object):
-    def function(self,output,expected):
-        return torch.mean(torch.pow(expected - output,2))
 
-    def grad(self,output,expected):
-        return -2 * (expected - output)
-\end{verbatim}
+We compare the code training and testing on the 2D points, with Pytirch Framework, in the same configuration (same epochs, learning rate and initialization weights). The results for the test error are presented in Table \ref{t1} when using full gradient method, and in Table \ref{t2} using SGD.
+\begin{table}
+\begin{center}
+\begin{tabular}{ r | c| c  }
+test error & Our framework & Pytorch \\
+\hline
+min & 0.7\%  & 1.4\% \\
+median & 1.65\% & 2.6\% \\
+mean & 1.67\%& 3.47\% \\
+max & 2.8\% & 8.2\% 
+\end{tabular}
+\end{center} 
+\caption{Full Gradient - test error rates on 20 i.i.d. realizations of the generated points}\label{t1}
+\end{table}
 
-The sequential class work as follow:
-\begin{verbatim}
-class Sequential(Module):
-    def __init__(self,criterion):
+\begin{table}
+\begin{center}
+\begin{tabular}{ r | c| c  }
+test error & Our framework & Pytorch \\
+\hline
+min & 0.2\%  & 0.5\% \\
+median & 0.4\% & 0.75\% \\
+mean & 0.4\%& 0.8\% \\
+max & 0.7\% & 1.2\% 
+\end{tabular}
+\end{center} 
 
-    def registerModules(self,*modules):
+\caption{SGD - test error rates on 20 i.i.d. realizations of the generated points}\label{t2}
+\end{table}
 
-    def checkIfModulesAreRegistered(self):
-
-    def resetGradient(self):
-
-    def updateParameters(self,eta,nsamples):
-
-    def backward(self,*gradwrtoutput):
-
-    def backwardPass(self, output, expected):
-
-\end{verbatim}
 where the $registerModules$ needs to be called when we define a new network, in order to store the modules in a list. We will use the list ordered when we will call the methods $forward$, $backward$, and $update_Parameters$
 
 \section{Conclusion}
