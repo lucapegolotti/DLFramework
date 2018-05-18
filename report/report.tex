@@ -140,17 +140,17 @@ We compare the train and test error obtained with our framework and the ones obt
 
  \begin{table}
  \begin{center}
-    \begin{tabular}{l l l l l}
+    \begin{tabular}{r c c c c}
 \toprule
      $ $ & \multicolumn{2}{c}{Full gradient} & \multicolumn{2}{c}{SGD} \\
      \cmidrule(lr){2-3}
      \cmidrule(lr){4-5}
      $ $ & Our framework & Pytorch & Our framework & Pytorch \\
 \midrule
-    min      	& 0.7\% 		& 0.7\% 		& 0.2\% & 0.5\%\\
-    median 	    & 1.65\% 	    & 1.65\% 		& 0.4\% & 0.75\% \\
-    mean    	& 1.67\%		& 1.63\%		& 0.4\% & 0.8\% \\
-    max      	& 2.8\% 		& 3.1\% 		& 0.7\% & 1.2\%  \\
+    min      	& 0.7\% 		& 0.7\% 		& 0.6\% & 0.6\%\\
+    median 	    & 1.65\% 	    & 1.65\% 		& 0.95\% & 1.4\% \\
+    mean    	& 1.67\%		& 1.63\%		& 1.01\% & 1.32\% \\
+    max      	& 2.8\% 		& 3.1\% 		& 1.6\% & 2.1\%  \\
 \bottomrule
     \end{tabular}
     \end{center}
@@ -158,7 +158,7 @@ We compare the train and test error obtained with our framework and the ones obt
     \label{t1}
     \end{table}
 \section{Conclusion}
-We have presented a simplified framework for neural networks that allows to easily concatenate building blocks (modules) sequentially. The simple numerical test we implemented shows that the stochastic gradient descent converges and that the errors we obtain on train and test datasets are small and comparable to the ones found when solving the same problem with Pytorch. 
+We have presented a simplified framework for neural networks that allows to easily concatenate building blocks (modules) sequentially. The simple numerical test we implemented shows that the stochastic gradient descent converges and that the errors we obtain on train and test data-sets are small and comparable to the ones found when solving the same problem with Pytorch. 
 
 With the goal of imitating the user-friendly interface of Pytorch, we came up with a solution to generate customized neural networks that require the definition of the modules inside the constructor of the \verb|Network| subclass and the implementation of a \verb|forward| method. We believe that the structure of the code is well-suited to be extended to other modules (e.g. convolutional layers, pooling \ldots) or to account for more complicated networks. However, our solution consists in internally storing the modules into a list, and therefore does not account for situations in which some nodes require multiple inputs/outputs. The major obstacle to the generalization of the approach to more complicated networks lies in the auto-generation of the underlying graph. A possible way to overcome this issue, in our opinion, could consist in introducing a wrapper for the tensor passed along the graph (similarly to what is done in Pytorch, with the Variable class) in which also the information of the latest visited node is stored. This could allow to build the graph ``on the fly" during the forward pass and to propagate the information backward in the back propagation algorithm.
 

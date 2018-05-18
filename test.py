@@ -83,22 +83,23 @@ def train_model(net,n_epochs,eta,mini_batch_size,train_input, train_target):
             loss += loss_value
             net.updateWeights(eta,mini_batch_size)
 
-        if (i % 10) == 0:
-            train_error = compute_number_errors(net.forward(train_input), train_target) / npoints * 100
-            print("Epoch: " + str(i) + " loss_function = {:.02f}".format(loss) + \
-                  " train error = {:.02f}".format(train_error))
+        # if (i % 10) == 0:
+        #     train_error = compute_number_errors(net.forward(train_input), train_target) / npoints * 100
+        #     print("Epoch: " + str(i) + " loss_function = {:.02f}".format(loss) + \
+        #           " train error = {:.02f}".format(train_error))
 
 # declare a loss function and associate it to the simple not
 loss = C.LossMSE()
-net = SimpleNet(loss)
-n_epochs, eta, mini_batch_size = 1000, 1e-3, 40
+for i in range(10):
+    net = SimpleNet(loss)
+    n_epochs, eta, mini_batch_size = 1000, 1e-3, 40
 
-# train the model according to SGD
-train_model(net,n_epochs,eta,mini_batch_size,train_input, train_target)
+    # train the model according to SGD
+    train_model(net,n_epochs,eta,mini_batch_size,train_input, train_target)
 
-# print final errors
-print("==================================================")
-train_error = compute_number_errors(net.forward(train_input), train_target) / npoints * 100
-test_error = compute_number_errors(net.forward(test_input), test_target) / npoints * 100
-print("Train error = {:.02f}".format(train_error))
-print("Test error = {:.02f}".format(test_error))
+    # print final errors
+    print("==================================================")
+    train_error = compute_number_errors(net.forward(train_input), train_target) / npoints * 100
+    test_error = compute_number_errors(net.forward(test_input), test_target) / npoints * 100
+    print("Train error = {:.02f}".format(train_error))
+    print("Test error = {:.02f}".format(test_error))

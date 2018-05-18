@@ -40,10 +40,10 @@ def train_model(model, train_input, train_target,n_epochs,eta,mini_batch_size):
             sum_loss = sum_loss + loss.data.item()
             optimizer.step()
 
-        if (e % 10) == 0:
-            train_error = compute_number_errors(model.forward(train_input), train_target) / npoints * 100
-            print("Epoch: " + str(e) + " loss_function = {:.02f}".format(sum_loss) + \
-                  " train error = {:.02f}".format(train_error))
+        # if (e % 999) == 0:
+        #     train_error = compute_number_errors(model.forward(train_input), train_target) / npoints * 100
+        #     print("Epoch: " + str(e) + " loss_function = {:.02f}".format(sum_loss) + \
+        #           " train error = {:.02f}".format(train_error))
 
 # compute the number of errors
 def compute_number_errors(inputs,outputs):
@@ -53,17 +53,18 @@ def compute_number_errors(inputs,outputs):
     return nberrors
 
 # create a network equivalent to the network used in test.py
-model = nn.Sequential(nn.Linear(2, 25),nn.ReLU(),nn.Linear(25, 25),nn.ReLU(),nn.Linear(25, 2))
+for i in range(10):
+    model = nn.Sequential(nn.Linear(2, 25),nn.ReLU(),nn.Linear(25, 25),nn.ReLU(),nn.Linear(25, 2))
 
-# initialize weights in model with normal (0,1)
-for p in model.parameters(): p.data.normal_(0, 1)
+    # initialize weights in model with normal (0,1)
+    for p in model.parameters(): p.data.normal_(0, 1)
 
-n_epochs, eta, mini_batch_size = 1000, 1e-3, 40
-train_model(model, train_input, train_target, n_epochs, eta, mini_batch_size)
+    n_epochs, eta, mini_batch_size = 1000, 1e-3, 40
+    train_model(model, train_input, train_target, n_epochs, eta, mini_batch_size)
 
-# print final errors
-print("==================================================")
-train_error = compute_number_errors(model.forward(train_input), train_target) / npoints * 100
-test_error = compute_number_errors(model.forward(test_input), test_target) / npoints * 100
-print("Train error = {:.02f}".format(train_error))
-print("Test error = {:.02f}".format(test_error))
+    # print final errors
+    print("==================================================")
+    train_error = compute_number_errors(model.forward(train_input), train_target) / npoints * 100
+    test_error = compute_number_errors(model.forward(test_input), test_target) / npoints * 100
+    print("Train error = {:.02f}".format(train_error))
+    print("Test error = {:.02f}".format(test_error))
