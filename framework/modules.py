@@ -106,6 +106,9 @@ class Linear(Module):
     """
     def backward(self,*gradwrtoutput):
 
+        if not hasattr(self, 'inputs'):
+            raise ValueError("Backward must be called after at least one forward call")
+
         # check gradwrtoutput size
         if len(gradwrtoutput) > 1:
             raise ValueError("Linear module expects just one gradient tensor in \
@@ -113,7 +116,8 @@ class Linear(Module):
 
         dl_ds = gradwrtoutput[0]
 
-        if dl_ds.size(0) is not self.inputs[0].size(0):
+        if dl_ds.size(0) != self.inputs[0].size(0) and \
+           dl_ds.size(1) != self.weights_grad.size(0):
             raise ValueError("Inconsistent gradient dimension in Linear backward \
                               call!")
 
@@ -216,6 +220,10 @@ class ReLU(ActivationFunction):
           a backward pass
     """
     def backward(self,*gradwrtoutput):
+
+        if not hasattr(self, 'input'):
+            raise ValueError("Backward must be called after at least one forward call")
+
         # check gradient size
         if len(gradwrtoutput) > 1:
             raise ValueError("ReLU module expects just one gradient tensor in \
@@ -266,6 +274,9 @@ class Tanh(ActivationFunction):
           a backward pass
     """
     def backward(self,*gradwrtoutput):
+
+        if not hasattr(self, 'input'):
+            raise ValueError("Backward must be called after at least one forward call")
 
         if len(gradwrtoutput) > 1:
             raise ValueError("Tanh module expects just one gradient tensor in \
@@ -318,6 +329,9 @@ class Sigmoid(ActivationFunction):
           a backward pass
     """
     def backward(self,*gradwrtoutput):
+
+        if not hasattr(self, 'input'):
+            raise ValueError("Backward must be called after at least one forward call")
 
         if len(gradwrtoutput) > 1:
             raise ValueError("Sigmoid module expects just one gradient tensor in \

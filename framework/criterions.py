@@ -31,7 +31,6 @@ class Loss(object):
     def grad(self,output,expected):
         raise NotImplementedError
 
-#TODO: check if this is correct
 """
 LossMSE: Mean Square Error loss function. This is defined as
     MSE(x,y) = 1/N sum_{i,j} (x_{ij} - y_{ij})^2
