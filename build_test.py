@@ -6,6 +6,8 @@ from torch import LongTensor as LongTensor
 
 import math
 
+# sample n points in the square (0,1) x (0,1) and label them 1 if they are inside
+# the circle with radius 1/sqrt(2*pi), 0 otherwise
 def sample(npoints):
     input = np.random.uniform(0,1,size=(npoints,2))
     target = np.zeros(shape=(npoints,2))
@@ -14,19 +16,13 @@ def sample(npoints):
         if (input[i,0] * input[i,0] + input[i,1] * input[i,1] < radius_sq):
             target[i,0] = 1
         else:
-            target[i,1] = 0
+            target[i,1] = 1
     return input, target
 
+# generate the datasets
 def generate(npoints):
     train_input, train_target = sample(npoints)
     test_input, test_target = sample(npoints)
 
-    print("Test case:")
-    npointsinside = (np.sum(train_target,axis=0))
-    print_str = "\ttrain dataset has " + str(int(npointsinside[0])) + "/" + str(npoints) + " inside the circle"
-    print(print_str)
-    npointsinside = (np.sum(test_target,axis=0))
-    print_str = "\ttest dataset has " + str(int(npointsinside[0])) + "/" + str(npoints) + " inside the circle"
-    print(print_str)
-
-    return FloatTensor(train_input),FloatTensor(train_target), FloatTensor(test_input), FloatTensor(test_target)
+    return FloatTensor(train_input),FloatTensor(train_target), \
+           FloatTensor(test_input), FloatTensor(test_target)
