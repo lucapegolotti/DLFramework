@@ -21,7 +21,6 @@ mean, std = train_input.mean(), train_input.std()
 
 train_input.sub_(mean).div_(std)
 test_input.sub_(mean).div_(std)
-print(train_input.type())
 
 nsamples = npoints
 nfeatures = 2
@@ -80,24 +79,23 @@ def train_model(net,n_epochs,eta,mini_batch_size,train_input, train_target):
             output = net.forward(train_input.narrow(0, b, mini_batch_size))
             loss_value = net.backward(output,train_target.narrow(0, b, mini_batch_size))
             net.updateWeights(eta,mini_batch_size)
-        if (i%100 == 0):
-            counttr = compute_number_errors(net.forward(train_input), train_target)
-            countte = compute_number_errors(net.forward(test_input), test_target)
-            print('epoch {:d} loss  {:f}  train_error {:.02f}% test_error {:.02f}%'.format(i,loss_value,
-                    (nsamples - counttr) / nsamples * 100,(nsamples - countte) / nsamples * 100,
-                  )
-                  )
+        # if (i%100 == 0):
+        #     counttr = compute_number_errors(net.forward(train_input), train_target)
+        #     countte = compute_number_errors(net.forward(test_input), test_target)
+        #     print('epoch {:d} loss  {:f}  train_error {:.02f}% test_error {:.02f}%'.format(i,loss_value,
+        #             (nsamples - counttr) / nsamples * 100,(nsamples - countte) / nsamples * 100,
+        #           )
+        #           )
 
 
 
 loss = C.LossMSE()
-net = SimpleNet(loss)
-
-
-n_epochs, eta, mini_batch_size = 2000, 1e-1, 100
-train_model(net,n_epochs,eta,mini_batch_size,train_input, train_target)
-print('train_error {:.02f}% test_error {:.02f}%'.format(
-    (nsamples-compute_number_errors(net.forward(train_input), train_target)) / train_input.size(0) * 100,
-    (nsamples-compute_number_errors(net.forward(test_input), test_target)) / test_input.size(0) * 100
-)
-)
+for i in range(10):
+    net = SimpleNet(loss)
+    n_epochs, eta, mini_batch_size = 2000, 1e-2, 100
+    train_model(net,n_epochs,eta,mini_batch_size,train_input, train_target)
+    print('{:.02f}% \t {:.02f}%'.format(
+        (nsamples-compute_number_errors(net.forward(train_input), train_target)) / train_input.size(0) * 100,
+        (nsamples-compute_number_errors(net.forward(test_input), test_target)) / test_input.size(0) * 100
+    )
+    )
