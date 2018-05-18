@@ -53,12 +53,12 @@ def compute_number_errors(inputs,outputs):
     return nberrors
 
 # create a network equivalent to the network used in test.py
-model = nn.Sequential(nn.Linear(2, 25),nn.ReLU(),nn.Linear(25, 25),nn.Tanh(),nn.Linear(25, 2))
+model = nn.Sequential(nn.Linear(2, 25),nn.ReLU(),nn.Linear(25, 25),nn.ReLU(),nn.Linear(25, 2))
 
 # initialize weights in model with normal (0,1)
 for p in model.parameters(): p.data.normal_(0, 1)
 
-n_epochs, eta, mini_batch_size = 500, 1e-3, 40
+n_epochs, eta, mini_batch_size = 1000, 1e-3, 40
 train_model(model, train_input, train_target, n_epochs, eta, mini_batch_size)
 
 # print final errors

@@ -39,7 +39,7 @@ class SimpleNet(N.Sequential):
         self.fc2 = M.Linear(25, 25)
         self.fc3 = M.Linear(25, outputs)
         self.nonlinear1 = M.ReLU()
-        self.nonlinear2 = M.Tanh()
+        self.nonlinear2 = M.ReLU()
 
         # register the module "in order", so that the network is aware of which
         # node communicates with which
@@ -91,7 +91,7 @@ def train_model(net,n_epochs,eta,mini_batch_size,train_input, train_target):
 # declare a loss function and associate it to the simple not
 loss = C.LossMSE()
 net = SimpleNet(loss)
-n_epochs, eta, mini_batch_size = 500, 1e-3, 40
+n_epochs, eta, mini_batch_size = 1000, 1e-3, 40
 
 # train the model according to SGD
 train_model(net,n_epochs,eta,mini_batch_size,train_input, train_target)

@@ -38,6 +38,8 @@
 \newcommand{\uhu}{\widehat{u}^*}
 \usepackage{enumitem}
 
+\usepackage{booktabs}
+
 \setlist[itemize,3]{label=$\diamond$}
 
 \usepackage{calrsfs}
@@ -83,7 +85,7 @@ The objective of this project is to design a mini “deep learning framework” 
 \caption{Class diagram of the framework. We indicate with the notation ``$=0$'' the methods that need to be implemented by the derived classes, even though such methods are not actually abstract in a strict sense.}
 \label{fig:diagram}
 \end{figure}
-The framework is composed by three modules: \verb|modules|, \verb|criterions| and \verb|networks|, located in the framework/ folder in the root of the project. The classes implemented in each module interact as shown in Figure~\ref{fig:diagram}. A set of tests on these classes is implemented in the framework/testsuite.py script. The code has been tested with Python 3.6.5 and Pytorch version 0.4.0.
+The framework is composed by three modules: \verb|modules|, \verb|criterions| and \verb|networks|, located in the framework/ folder in the root of the project. The classes implemented in each module interact as shown in Figure~\ref{fig:diagram}. A set of tests on these classes is implemented in the framework/testsuite.py script. The code has been tested with Python 3.6.5 and Pytorch version 0.4.0. We took inspiration from the Pytorch documentation\footnote{\url{https://pytorch.org/docs/stable/index.html}} and from \cite{goodfellow2016deep} for the implementation of the required functionalities.
 \subsection{Modules}
 Modules implement some of the typical building blocks of a neural network. Each of these building blocks derives from the class \verb|Module| (see Figure~\ref{fig:diagram}), the basic structure of which (except for the methods \verb|resetGradient| and \verb|updateParameters|) was suggested in the description of the project. The methods \verb|forward| and \verb|backward| implement a forward and backward pass respectively. The method \verb|resetGradient| resets all the gradient tensors (if any) to zero, whereas the method \verb|updateWeights| updates the weights (if any) of the module according to the learning rate \verb|eta|.
 
@@ -98,7 +100,7 @@ The classes which derive from \verb|Module| are:
 \begin{equation*}
 \text{tanh}(x) = \dfrac{e^x - e^{-x}}{e^{x} + e^{-x}}.
 \end{equation*}
-\item \verb|Sigmoid|: this module applies the sigmoid function to the given input tensor. If $x \in \mathbb{R}^{n \times m}$ is the input tensor, then $y_{ij} = \text{sigmoid}(x_{ij})$ and $y \in \mathbb{R}^{n \times m}$. The sigmoid functions is defined as
+\item \verb|Sigmoid|: this module applies the sigmoid function to the given input tensor. If $x \in \mathbb{R}^{n \times m}$ is the input tensor, then $y_{ij} = \text{sigmoid}(x_{ij})$ and $y \in \mathbb{R}^{n \times m}$. The sigmoid function is defined as
 \begin{equation*}
 \text{sigmoid}(x) = \dfrac{e^x}{e^x + 1}.
 \end{equation*}
@@ -107,71 +109,62 @@ The classes which derive from \verb|Module| are:
 \subsection{Criterions}
 The \verb|criterions| module contains the implementation of the loss functions. These share the interface given by the following base class \verb|Loss| (see Figure~\ref{fig:diagram}). The method \verb|function| computes the loss function of the \verb|output| of a forward pass of a network with respect to the target (\verb|expected|), and the \verb|grad| method computes the gradient of the loss corresponding to the same parameters.
 
-The available criterions are:
+The only available loss function is the following:
 \begin{itemize}
 \item \verb|LossMSE|: Mean Square Error loss function. If $x \in \mathbb{R}^{n \times m}$ is the output of the forward pass and $y \in \mathbb{R}^{n \times m}$ is the expected output, the loss function is computed as
 \begin{equation*}
 \text{MSE}(x,y) = \dfrac{1}{N} \sum_{i,j} (x_{ij} - y_{ij})^2,
 \end{equation*} 
 where $N$ is the total number of entries of the tensors $x$ and $y$.
-\item \verb|LossCrossEntropy|: to be implemented?
 \end{itemize}
 
 \subsection{Networks}
-The \verb|criterions| module provides generic structures for the implementation of neural networks. The base class is the \verb|Network| class (see Figure~\ref{fig:diagram}). Each derived class must be iterable (namely, it must provide the abstract method \verb|__iter__|) and must implement the \verb|forward| and the \verb|backward| methods, which depend on the topology of the underlying graph.
+The \verb|network| module provides a generic structure for the implementation of neural networks. The base class is the \verb|Network| class (see Figure~\ref{fig:diagram}). Each derived class must be iterable (namely, it must provide the abstract method \verb|__iter__|) and must implement the \verb|forward| and the \verb|backward| methods, which depend on the topology of the underlying graph.
 
-The available networks are:
+The only available network is the following:
 \begin{itemize}
 \item \verb|Sequential|: template for neural networks: it provides a blueprint for derived classes implementing fully connected neural networks. Each graph must include a unique ``source'' (a node with only one input), a unique ``sink'' (a node with only one input) and nodes with exactly one input and one output. Each node is in fact an object derived from the \verb|Module| class and must be defined as an attribute of a derived class in the constructor. Importantly, at the end of the constructor these objects must be registered via the method \verb|registerModules(self,*modules)|, where the \verb|*modules| must contain the modules in the order they appear in the network itself. Internally, the \verb|registerModules| method builds a list of the modules, which  provides a way to iterate over the elements composing the \verb|Sequential| network. The forward and backward passes are executed in a straightforward manner by calling the \verb|forward| and \verb|backward| method of all the modules of the graph sequentially and propagating the result to the next or the previous node (the gradient to be injected in the last node of the network is the gradient of the loss functions with respect to the output of the forward pass).
 \end{itemize}
 \section{Test case}
-The structure of the test code, implementing a network with two input units, two output units, three hidden layers of 25 units is:
+The structure of the test code in test.py, implementing a network with two input units, two output units, three hidden layers of 25 units is the following:
 \begin{itemize}
-\item Generate 1000 training sample, and 1000 testing points
-\item Normalize them with a zero mean and unit std
-\item Built a three hidden layer with linear neural network, and ReLU after each linear module "SimpleNet"
-\item Train the neural network using the 1000 training sample, for 1000 epochs and a constant learning rate $=1e-2$.
-\item Plot the training error and the testing error while training the network, and verify these results with the framework PyTorch.
+\item Generate 1000 training sample, and 1000 testing points.
+\item Normalize them with to have a zero mean and unit standard deviation.
+\item Define a network \verb|SimpleNet| (inheriting from \verb|Sequential|) which is composed by two \verb|Linear| modules followed by a \verb|ReLU| and a \verb|Tanh| modules respectively, and a final \verb|Linear| module.
+\item Train the neural network using the training sample, for 1000 epochs and a constant learning rate $\eta =1$e-2.
+\item Plot the loss function and the train error during the stochastic gradient descent (SGD).
+\item Finally, print the train and test errors.
 \end{itemize}
 
-The parameters of the sample length is hidden in the $mean$ function, and we had to modify the eta in the final code: $eta=eta/nsample$.
+We compare the train and test error obtained with our framework and the ones obtained with the same neural network in Pytorch by using the same configuration, i.e. we consider the same epochs, learning rate and initialization weights (which are drawn from normal distributions with zero mean and unitary standard deviation). The results for the test error are presented in Table~\ref{t1} when using gradient descent with no mini batches (i.e. mini batch size equals to the number of points in the train sample) and when using the SGD.
 
-We compare the code training and testing on the 2D points, with Pytirch Framework, in the same configuration (same epochs, learning rate and initialization weights). The results for the test error are presented in Table \ref{t1} when using full gradient method, and in Table \ref{t2} using SGD.
-\begin{table}
-\begin{center}
-\begin{tabular}{ r | c| c  }
-test error & Our framework & Pytorch \\
-\hline
-min & 0.7\%  & 1.4\% \\
-median & 1.65\% & 2.6\% \\
-mean & 1.67\%& 3.47\% \\
-max & 2.8\% & 8.2\% 
-\end{tabular}
-\end{center} 
-\caption{Full Gradient - test error rates on 20 i.i.d. realizations of the generated points}\label{t1}
-\end{table}
-
-\begin{table}
-\begin{center}
-\begin{tabular}{ r | c| c  }
-test error & Our framework & Pytorch \\
-\hline
-min & 0.2\%  & 0.5\% \\
-median & 0.4\% & 0.75\% \\
-mean & 0.4\%& 0.8\% \\
-max & 0.7\% & 1.2\% 
-\end{tabular}
-\end{center} 
-
-\caption{SGD - test error rates on 20 i.i.d. realizations of the generated points}\label{t2}
-\end{table}
-
-where the $registerModules$ needs to be called when we define a new network, in order to store the modules in a list. We will use the list ordered when we will call the methods $forward$, $backward$, and $update_Parameters$
-
+ \begin{table}
+ \begin{center}
+    \begin{tabular}{l l l l l}
+\toprule
+     $ $ & \multicolumn{2}{c}{Full gradient} & \multicolumn{2}{c}{SGD} \\
+     \cmidrule(lr){2-3}
+     \cmidrule(lr){4-5}
+     $ $ & Our framework & Pytorch & Our framework & Pytorch \\
+\midrule
+    min      	& 0.7\% 		& 1.4\% 		& 0.2\% & 0.5\%\\
+    median 	& 1.65\% 	& 2.6\% 		& 0.4\% & 0.75\% \\
+    mean    	& 1.67\%		& 3.47\%		& 0.4\% & 0.8\% \\
+    max      	& 2.8\% 		& 8.2\% 		& 0.7\% & 1.2\%  \\
+\bottomrule
+    \end{tabular}
+    \end{center}
+    \caption{Test error rates on 20 i.i.d.\ realizations of the generated points, both using the standard gradient descent algorithm and the SGD algorithms.}
+    \label{t1}
+    \end{table}
 \section{Conclusion}
 We have presented a simplified framework for neural networks that allows to easily concatenate building blocks (modules) sequentially. The simple numerical test we implemented shows that the stochastic gradient descent converges and that the errors we obtain on train and test datasets are small and comparable to the ones found when solving the same problem with Pytorch. 
 
 With the goal of imitating the user-friendly interface of Pytorch, we came up with a solution to generate customized neural networks that require the definition of the modules inside the constructor of the \verb|Network| subclass and the implementation of a \verb|forward| method. We believe that the structure of the code is well-suited to be extended to other modules (e.g. convolutional layers, pooling \ldots) or to account for more complicated networks. However, our solution consists in internally storing the modules into a list, and therefore does not account for situations in which some nodes require multiple inputs/outputs. The major obstacle to the generalization of the approach to more complicated networks lies in the auto-generation of the underlying graph. A possible way to overcome this issue, in our opinion, could consist in introducing a wrapper for the tensor passed along the graph (similarly to what is done in Pytorch, with the Variable class) in which also the information of the latest visited node is stored. This could allow to build the graph ``on the fly" during the forward pass and to propagate the information backward in the back propagation algorithm.
+
+ % References
+\bibliographystyle{abbrv}
+\bibliography{mybib_dl} 
 
 \end{document}
 \grid
