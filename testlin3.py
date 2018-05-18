@@ -34,7 +34,7 @@ class SimpleNet(N.Sequential):
         self.fc2 = M.Linear(25, 25)
         self.fc3 = M.Linear(25, outputs)
         self.nonlinear1 = M.ReLU()
-        self.nonlinear2 = M.ReLU()
+        self.nonlinear2 = M.Sigmoid()
 
         super().registerModules(self.fc1, self.nonlinear1, self.fc2,self.nonlinear2,self.fc3)
 
@@ -95,7 +95,7 @@ def train_model(net,n_epochs,eta):
 loss = C.LossMSE()
 net = SimpleNet(loss)
 
-n_epochs, eta = 1000, 1e-3
+n_epochs, eta = 1000, 1e-2
 train_model(net,n_epochs,eta)
 print('train_error {:.02f}% test_error {:.02f}%'.format(
     (nsamples-compute_number_errors(net.forward(train_input), train_target)) / train_input.size(0) * 100,
